@@ -43,8 +43,6 @@ func (service *UserService) Register(email string) error {
 	}
 	log.Printf("user %s saved", user.Id)
 
-	go service.authenticationService.CreateAccount(user.Id)
-
 	log.Printf("successfully registered user %s", user.Id)
 	return nil
 }
