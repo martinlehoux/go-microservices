@@ -1,6 +1,10 @@
 package authentication
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func testModule() *AuthenticationService {
 	accountStore := bootstrapFakeAccountStore()
@@ -8,31 +12,26 @@ func testModule() *AuthenticationService {
 	return &service
 }
 
-func TestRegisterNewAccount(t *testing.T) {
+func TestRegister(t *testing.T) {
+	assert := assert.New(t)
 	service := testModule()
+	t.Cleanup(func() {
+		service = testModule()
+	})
 
-	err := service.Register("identifier", "password")
+	t.Run("it should register an account", func(t *testing.T) {
+		err := service.Register("identifier", "password")
 
-	if err != nil {
-		t.Errorf("expected Register not to error but got: %s", err)
-	}
+		assert.Nil(err, "the registration should succeed")
+		_, err = service.accountStore.loadForIdentifier("identifier")
+		assert.Nil(err, "the account should be saved")
+	})
 
-	_, err = service.accountStore.loadForIdentifier("identifier")
-	if err != nil {
-		t.Errorf("expected account to be saved but got: %s", err)
-	}
-}
+	t.Run("it should abort if the account already exists", func(t *testing.T) {
+		service.accountStore.save(NewAccount("identifier", []byte("password")))
 
-func TestRegisterExistingAccount(t *testing.T) {
-	service := testModule()
-	service.accountStore.save(NewAccount("identifier", []byte("password")))
+		err := service.Register("identifier", "password")
 
-	err := service.Register("identifier", "password")
-
-	if err == nil {
-		t.Errorf("expected Register to error but got nothing")
-	}
-	if err.Error() != "identifier already used" {
-		t.Errorf("expected error to be identifier already used but got: %s", err)
-	}
+		assert.ErrorContains(err, "identifier already used", "the registration should fail")
+	})
 }
