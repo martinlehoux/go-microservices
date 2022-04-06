@@ -35,5 +35,5 @@ func (account *Account) CreateToken() {
 }
 
 func (account *Account) ValidatePassword(hashedPassword []byte) bool {
-	return bytes.Compare(account.HashedPassword, hashedPassword) == 0
+	return bytes.Equal(account.HashedPassword, hashedPassword)
 }
