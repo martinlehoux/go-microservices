@@ -40,7 +40,10 @@ func main() {
 		if err != nil {
 			return err
 		}
-		userService.Register(form.Email)
+		err = userService.Register(form.Email)
+		if err != nil {
+			return ctx.Status(400).JSON(&fiber.Map{"error": err.Error()})
+		}
 		return ctx.Status(201).JSON(&fiber.Map{"success": true})
 	})
 
