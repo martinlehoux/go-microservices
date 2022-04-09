@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 	"errors"
+	"go-microservices/common"
 	"log"
 
 	"golang.org/x/crypto/argon2"
@@ -24,19 +25,19 @@ func Bootstrap(privateKey rsa.PrivateKey) *AuthenticationService {
 	}
 }
 
-func (service *AuthenticationService) Authenticate(identifier string, password string) (token Token, signature []byte, err error) {
+func (service *AuthenticationService) Authenticate(identifier string, password string) (token common.Token, signature []byte, err error) {
 	log.Printf("starting authentication for identifier %s", identifier)
 
 	account, err := service.accountStore.loadForIdentifier(identifier)
 	if err != nil {
 		log.Printf("failed to find account for identifier %s: %s", identifier, err)
-		return Token{}, nil, err
+		return common.Token{}, nil, err
 	}
 
 	hashedPassword := service.hashPassword(password)
 	if !account.ValidatePassword(hashedPassword) {
 		log.Printf("failed to authenticate account for identifier %s: password mismatch", identifier)
-		return Token{}, nil, errors.New("password mismatch")
+		return common.Token{}, nil, errors.New("password mismatch")
 	}
 
 	token = account.CreateToken()
@@ -44,7 +45,7 @@ func (service *AuthenticationService) Authenticate(identifier string, password s
 	signedToken, err := service.signToken(token)
 	if err != nil {
 		log.Printf("failed to sign token for identifier %s: %s", identifier, err)
-		return Token{}, nil, errors.New("failed to sign token")
+		return common.Token{}, nil, errors.New("failed to sign token")
 	}
 
 	return token, signedToken, nil
@@ -92,7 +93,7 @@ func (service *AuthenticationService) ensureIdentifierNotUsed(identifier string)
 	return nil
 }
 
-func (service *AuthenticationService) signToken(token Token) ([]byte, error) {
+func (service *AuthenticationService) signToken(token common.Token) ([]byte, error) {
 	msg, err := token.Bytes()
 	if err != nil {
 		return nil, err

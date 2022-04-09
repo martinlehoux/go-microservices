@@ -3,6 +3,7 @@ package authentication
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"go-microservices/common"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,7 +51,7 @@ func TestAuthenticate(t *testing.T) {
 		token, signature, err := service.Authenticate("identifier", "password")
 
 		assert.Nil(signature)
-		assert.Equal(token, Token{})
+		assert.Equal(token, common.Token{})
 		assert.ErrorContains(err, "account not found", "the authentication should fail")
 	})
 
@@ -60,7 +61,7 @@ func TestAuthenticate(t *testing.T) {
 		token, signature, err := service.Authenticate("identifier", "wrong password")
 
 		assert.Nil(signature)
-		assert.Equal(token, Token{})
+		assert.Equal(token, common.Token{})
 		assert.ErrorContains(err, "password mismatch", "the authentication should fail")
 	})
 
