@@ -2,20 +2,17 @@ package user
 
 import (
 	"errors"
-	"go-microservices/authentication"
 	"log"
 )
 
 type UserService struct {
-	userStore             UserStore
-	authenticationService *authentication.AuthenticationService
+	userStore UserStore
 }
 
-func Bootstrap(authenticationService *authentication.AuthenticationService) *UserService {
+func Bootstrap() *UserService {
 	store := bootstrapFakeUserStore()
 	return &UserService{
-		userStore:             &store,
-		authenticationService: authenticationService,
+		userStore: &store,
 	}
 }
 
