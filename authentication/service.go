@@ -1,6 +1,10 @@
 package authentication
 
 import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha512"
 	"errors"
 	"log"
 
@@ -9,41 +13,41 @@ import (
 
 type AuthenticationService struct {
 	accountStore AccountStore
+	privateKey   rsa.PrivateKey
 }
 
-func Bootstrap() *AuthenticationService {
+func Bootstrap(privateKey rsa.PrivateKey) *AuthenticationService {
 	accountStore := bootstrapFakeAccountStore()
 	return &AuthenticationService{
 		accountStore: &accountStore,
+		privateKey:   privateKey,
 	}
 }
 
-func (service *AuthenticationService) Authenticate(identifier string, password string) (Token, error) {
-	var err error
+func (service *AuthenticationService) Authenticate(identifier string, password string) (token Token, signature []byte, err error) {
 	log.Printf("starting authentication for identifier %s", identifier)
 
 	account, err := service.accountStore.loadForIdentifier(identifier)
 	if err != nil {
 		log.Printf("failed to find account for identifier %s: %s", identifier, err)
-		return Token{}, err
+		return Token{}, nil, err
 	}
 
 	hashedPassword := service.hashPassword(password)
 	if !account.ValidatePassword(hashedPassword) {
 		log.Printf("failed to authenticate account for identifier %s: password mismatch", identifier)
-		return Token{}, errors.New("password mismatch")
+		return Token{}, nil, errors.New("password mismatch")
 	}
 
-	account.CreateToken()
+	token = account.CreateToken()
 
-	err = service.accountStore.save(account)
+	signedToken, err := service.signToken(token)
 	if err != nil {
-		log.Printf("failed to save account %s: %s", account.Id, err)
-		return Token{}, err
+		log.Printf("failed to sign token for identifier %s: %s", identifier, err)
+		return Token{}, nil, errors.New("failed to sign token")
 	}
 
-	log.Printf("successfully authenticated identifier %s", identifier)
-	return account.Tokens[len(account.Tokens)-1], nil
+	return token, signedToken, nil
 }
 
 func (service *AuthenticationService) Register(identifier string, password string) error {
@@ -86,4 +90,13 @@ func (service *AuthenticationService) ensureIdentifierNotUsed(identifier string)
 
 	log.Printf("successfully ensured identifier %s is not used", identifier)
 	return nil
+}
+
+func (service *AuthenticationService) signToken(token Token) ([]byte, error) {
+	msg, err := token.Bytes()
+	if err != nil {
+		return nil, err
+	}
+	digest := sha512.Sum512(msg)
+	return rsa.SignPKCS1v15(rand.Reader, &service.privateKey, crypto.SHA512, digest[:])
 }

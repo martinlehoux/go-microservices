@@ -38,10 +38,10 @@ func BootstrapHttpController(router fiber.Router, authenticationService *Authent
 		if err != nil {
 			return common.SendError(ctx, err)
 		}
-		token, err := authenticationService.Authenticate(form.Identifier, form.Password)
+		token, signature, err := authenticationService.Authenticate(form.Identifier, form.Password)
 		if err != nil {
 			return common.SendError(ctx, err)
 		}
-		return ctx.JSON(&fiber.Map{"token": token})
+		return ctx.JSON(&fiber.Map{"token": token, "signature": signature})
 	})
 }

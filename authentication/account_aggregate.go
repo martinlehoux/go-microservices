@@ -2,20 +2,29 @@ package authentication
 
 import (
 	"bytes"
+	"encoding/json"
 	"go-microservices/common"
 	"time"
 )
 
 type Token struct {
-	Id        common.ID
-	CreatedAt time.Time
+	CreatedAt  time.Time `json:"created_at"`
+	Identifier string    `json:"identifier"`
+}
+
+func (token Token) Bytes() ([]byte, error) {
+	encodedBytes := new(bytes.Buffer)
+	err := json.NewEncoder(encodedBytes).Encode(token)
+	if err != nil {
+		return nil, err
+	}
+	return encodedBytes.Bytes(), nil
 }
 
 type Account struct {
 	Id             common.ID
 	Identifier     string
 	HashedPassword []byte
-	Tokens         []Token
 }
 
 func NewAccount(identifier string, hashedPassword []byte) Account {
@@ -26,12 +35,11 @@ func NewAccount(identifier string, hashedPassword []byte) Account {
 	}
 }
 
-func (account *Account) CreateToken() {
-	token := Token{
-		Id:        common.CreateID(),
-		CreatedAt: time.Now(),
+func (account *Account) CreateToken() Token {
+	return Token{
+		CreatedAt:  time.Now(),
+		Identifier: account.Identifier,
 	}
-	account.Tokens = append(account.Tokens, token)
 }
 
 func (account *Account) ValidatePassword(hashedPassword []byte) bool {

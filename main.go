@@ -2,6 +2,7 @@ package main
 
 import (
 	"go-microservices/authentication"
+	"go-microservices/common"
 	"go-microservices/user"
 	"log"
 
@@ -10,7 +11,7 @@ import (
 
 func main() {
 	app := fiber.New()
-	authenticationService := authentication.Bootstrap()
+	authenticationService := authentication.Bootstrap(common.LoadPrivateKey("id_rsa"))
 	authentication.BootstrapHttpController(app.Group("/auth"), authenticationService)
 	userService := user.Bootstrap()
 	user.BootstrapHttpController(app.Group("/users"), userService)
