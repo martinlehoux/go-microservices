@@ -1,4 +1,4 @@
-package user
+package human_resources
 
 import (
 	"go-microservices/common"
