@@ -2,10 +2,11 @@ package authentication
 
 import (
 	"crypto/rsa"
+	"go-microservices/authentication/account"
 )
 
 func Bootstrap(privateKey rsa.PrivateKey) *AuthenticationService {
-	accountStore := NewSqlAccountStore()
+	accountStore := account.NewSqlAccountStore()
 	return &AuthenticationService{
 		accountStore: &accountStore,
 		privateKey:   privateKey,

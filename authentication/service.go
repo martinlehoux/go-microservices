@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 	"errors"
+	"go-microservices/authentication/account"
 	"go-microservices/common"
 	"log"
 
@@ -13,7 +14,7 @@ import (
 )
 
 type AuthenticationService struct {
-	accountStore AccountStore
+	accountStore account.AccountStore
 	privateKey   rsa.PrivateKey
 }
 
@@ -55,7 +56,7 @@ func (service *AuthenticationService) Register(identifier string, password strin
 
 	hashedPassword := service.hashPassword(password)
 
-	account := NewAccount(identifier, hashedPassword)
+	account := account.NewAccount(identifier, hashedPassword)
 
 	err = service.accountStore.Save(account)
 	if err != nil {

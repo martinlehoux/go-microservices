@@ -1,4 +1,4 @@
-package authentication
+package account
 
 import (
 	"database/sql"

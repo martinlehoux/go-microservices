@@ -1,4 +1,4 @@
-package authentication
+package account
 
 type AccountStore interface {
 	Save(account Account) error

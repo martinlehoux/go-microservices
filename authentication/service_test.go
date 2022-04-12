@@ -3,6 +3,7 @@ package authentication
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"go-microservices/authentication/account"
 	"go-microservices/common"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func testModule() *AuthenticationService {
-	accountStore := NewFakeAccountStore()
+	accountStore := account.NewFakeAccountStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	service := AuthenticationService{accountStore: &accountStore, privateKey: *privateKey}
 	return &service
@@ -32,7 +33,7 @@ func TestRegister(t *testing.T) {
 	})
 
 	t.Run("it should abort if the account already exists", func(t *testing.T) {
-		service.accountStore.Save(NewAccount("identifier", []byte("password")))
+		service.accountStore.Save(account.NewAccount("identifier", []byte("password")))
 
 		err := service.Register("identifier", "password")
 
