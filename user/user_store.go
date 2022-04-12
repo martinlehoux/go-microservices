@@ -2,27 +2,26 @@ package user
 
 import (
 	"errors"
-	"go-microservices/common"
 )
 
 type UserStore interface {
-	load(userId common.ID) (User, error)
+	load(userId UserID) (User, error)
 	save(user User) error
 	getMany() ([]User, error)
 	emailExists(email string) (bool, error)
 }
 
 type FakeUserStore struct {
-	users map[common.ID]User
+	users map[UserID]User
 }
 
 func bootstrapFakeUserStore() FakeUserStore {
 	return FakeUserStore{
-		users: make(map[common.ID]User),
+		users: make(map[UserID]User),
 	}
 }
 
-func (store *FakeUserStore) load(userId common.ID) (User, error) {
+func (store *FakeUserStore) load(userId UserID) (User, error) {
 	user, found := store.users[userId]
 	if !found {
 		return user, errors.New("User not found")
