@@ -1,8 +1,12 @@
+database_url := "postgres://user:password@localhost:5432/authentication?sslmode=disable"
+
 test:
-  go test go-microservices/authentication
-  go test go-microservices/user
+  go test ./...
 
 lint:
   staticcheck ./...
   errcheck -ignoretests ./...
   go vet ./...
+
+migrate DIRECTION:
+  migrate -path=./authentication/migrations -database={{database_url}} {{DIRECTION}}
