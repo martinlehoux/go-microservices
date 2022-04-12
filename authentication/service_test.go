@@ -10,7 +10,7 @@ import (
 )
 
 func testModule() *AuthenticationService {
-	accountStore := bootstrapFakeAccountStore()
+	accountStore := NewFakeAccountStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	service := AuthenticationService{accountStore: &accountStore, privateKey: *privateKey}
 	return &service
@@ -27,12 +27,12 @@ func TestRegister(t *testing.T) {
 		err := service.Register("identifier", "password")
 
 		assert.Nil(err, "the registration should succeed")
-		_, err = service.accountStore.loadForIdentifier("identifier")
+		_, err = service.accountStore.LoadForIdentifier("identifier")
 		assert.Nil(err, "the account should be saved")
 	})
 
 	t.Run("it should abort if the account already exists", func(t *testing.T) {
-		service.accountStore.save(NewAccount("identifier", []byte("password")))
+		service.accountStore.Save(NewAccount("identifier", []byte("password")))
 
 		err := service.Register("identifier", "password")
 

@@ -17,18 +17,10 @@ type AuthenticationService struct {
 	privateKey   rsa.PrivateKey
 }
 
-func Bootstrap(privateKey rsa.PrivateKey) *AuthenticationService {
-	accountStore := bootstrapFakeAccountStore()
-	return &AuthenticationService{
-		accountStore: &accountStore,
-		privateKey:   privateKey,
-	}
-}
-
 func (service *AuthenticationService) Authenticate(identifier string, password string) (token common.Token, signature []byte, err error) {
 	log.Printf("starting authentication for identifier %s", identifier)
 
-	account, err := service.accountStore.loadForIdentifier(identifier)
+	account, err := service.accountStore.LoadForIdentifier(identifier)
 	if err != nil {
 		log.Printf("failed to find account for identifier %s: %s", identifier, err)
 		return common.Token{}, nil, err
@@ -65,7 +57,7 @@ func (service *AuthenticationService) Register(identifier string, password strin
 
 	account := NewAccount(identifier, hashedPassword)
 
-	err = service.accountStore.save(account)
+	err = service.accountStore.Save(account)
 	if err != nil {
 		log.Printf("failed to save account %s: %s", account.Id, err)
 		return err
@@ -83,7 +75,7 @@ func (service *AuthenticationService) ensureIdentifierNotUsed(identifier string)
 	var err error
 	log.Printf("starting check for unused identifier %s", identifier)
 
-	_, err = service.accountStore.loadForIdentifier(identifier)
+	_, err = service.accountStore.LoadForIdentifier(identifier)
 
 	if err == nil {
 		return errors.New("identifier already used")
