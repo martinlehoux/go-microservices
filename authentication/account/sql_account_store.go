@@ -1,33 +1,28 @@
 package account
 
 import (
-	"database/sql"
-	"errors"
+	"context"
 	"go-microservices/common"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type SqlAccountStore struct {
-	db *sql.DB
+	conn *pgxpool.Pool
 }
 
 func NewSqlAccountStore() SqlAccountStore {
-	db, err := sql.Open("sqlite3", "test.db")
+	conn, err := pgxpool.Connect(context.Background(), "postgres://user:password@localhost:5432/authentication")
 	common.PanicOnError(err)
 	return SqlAccountStore{
-		db: db,
+		conn: conn,
 	}
 }
 
 func (store *SqlAccountStore) Save(account Account) error {
-	query, err := store.db.Prepare("INSERT INTO accounts (id, identifier, hashed_password) VALUES (?, ?, ?)")
+	_, err := store.conn.Exec(context.Background(), "INSERT INTO accounts (id, identifier, hashed_password) VALUES ($1, $2, $3)", account.Id, account.Identifier, account.HashedPassword)
 	if err != nil {
-		return errors.New("failed to prepare insert statement")
-	}
-	_, err = query.Exec(account.Id, account.Identifier, account.HashedPassword)
-	if err != nil {
-		return errors.New("failed to execute insert statement")
+		return err
 	}
 	return nil
 
@@ -35,31 +30,16 @@ func (store *SqlAccountStore) Save(account Account) error {
 
 func (store *SqlAccountStore) LoadForIdentifier(identifier string) (Account, error) {
 	var account = Account{}
-	query, err := store.db.Prepare("SELECT id, identifier, hashed_password FROM accounts WHERE identifier = ?")
+
+	err := store.conn.QueryRow(context.Background(), "SELECT id, identifier, hashed_password FROM accounts WHERE identifier = $1", identifier).Scan(&account.Id, &account.Identifier, &account.HashedPassword)
+
+	return account, err
+}
+
+func (store *SqlAccountStore) truncate() error {
+	_, err := store.conn.Exec(context.Background(), "DELETE FROM accounts")
 	if err != nil {
-		return account, errors.New("failed to prepare query statement")
+		return err
 	}
-	rows, err := query.Query(identifier)
-	if err != nil {
-		return account, errors.New("failed to query")
-	}
-	if err != nil {
-		return account, errors.New("failed to query rows")
-	}
-	if !rows.Next() {
-		return account, errors.New("no row = not found")
-	}
-	err = rows.Scan(&account.Id, &account.Identifier, &account.HashedPassword)
-	if err != nil {
-		return account, errors.New("failed to parse row")
-	}
-	err = rows.Err()
-	if err != nil {
-		return account, errors.New("error occured")
-	}
-	err = rows.Close()
-	if err != nil {
-		return account, errors.New("error occured")
-	}
-	return account, nil
+	return nil
 }
