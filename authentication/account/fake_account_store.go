@@ -2,16 +2,15 @@ package account
 
 import (
 	"errors"
-	"go-microservices/common"
 )
 
 type FakeAccountStore struct {
-	accounts map[common.ID]Account
+	accounts map[AccountID]Account
 }
 
 func NewFakeAccountStore() FakeAccountStore {
 	return FakeAccountStore{
-		accounts: make(map[common.ID]Account),
+		accounts: make(map[AccountID]Account),
 	}
 }
 

@@ -2,8 +2,10 @@ package user
 
 import "go-microservices/common"
 
+type UserID common.ID
+
 type User struct {
-	Id            common.ID
+	Id            UserID
 	PreferredName string
 	Email         string
 }
@@ -15,7 +17,7 @@ type NewUserPayload struct {
 
 func NewUser(payload NewUserPayload) User {
 	return User{
-		Id:            common.CreateID(),
+		Id:            UserID(common.CreateID()),
 		PreferredName: payload.PreferredName,
 		Email:         payload.Email,
 	}

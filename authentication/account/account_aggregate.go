@@ -6,15 +6,17 @@ import (
 	"time"
 )
 
+type AccountID common.ID
+
 type Account struct {
-	Id             common.ID
+	Id             AccountID
 	Identifier     string
 	HashedPassword []byte
 }
 
 func NewAccount(identifier string, hashedPassword []byte) Account {
 	return Account{
-		Id:             common.CreateID(),
+		Id:             AccountID(common.CreateID()),
 		Identifier:     identifier,
 		HashedPassword: hashedPassword,
 	}
