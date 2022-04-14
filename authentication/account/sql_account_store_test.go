@@ -28,9 +28,9 @@ func TestSave(t *testing.T) {
 
 		err := repository.Save(account)
 
-		assert.Nil(err, "the save should succeed")
+		assert.NoError(err, "the save should succeed")
 		savedAccount, err := repository.LoadForIdentifier(identifier)
-		assert.Nil(err, "the account should be saved")
+		assert.NoError(err, "the account should be saved")
 		assert.Equal(account, savedAccount, "the account should be saved exactly")
 	})
 
@@ -56,7 +56,7 @@ func TestLoadForIdentifier(t *testing.T) {
 		account, err := repository.LoadForIdentifier("wrong")
 
 		assert.Equal(account, Account{}, "the account should be empty")
-		assert.Error(err, "not found")
+		assert.ErrorContains(err, "no rows in result set", "the error should be returned")
 	})
 
 	t.Run("it should get an Account with the correct identifier", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestLoadForIdentifier(t *testing.T) {
 
 		account, err := repository.LoadForIdentifier(identifier)
 
-		assert.Nil(err, "the load should succeed")
+		assert.NoError(err, "the load should succeed")
 		assert.Equal(account, savedAccount, "the account should be empty")
 	})
 
