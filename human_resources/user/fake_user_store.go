@@ -41,3 +41,7 @@ func (store *FakeUserStore) EmailExists(email string) (bool, error) {
 	}
 	return false, nil
 }
+
+func (store *FakeUserStore) Cleanup() {
+	store.users = make(map[UserID]User)
+}
