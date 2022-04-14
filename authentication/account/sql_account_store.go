@@ -38,8 +38,5 @@ func (store *SqlAccountStore) LoadForIdentifier(identifier string) (Account, err
 
 func (store *SqlAccountStore) truncate() error {
 	_, err := store.conn.Exec(context.Background(), "DELETE FROM accounts")
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
