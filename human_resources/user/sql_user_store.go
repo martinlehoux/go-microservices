@@ -56,8 +56,3 @@ func (store *SqlUserStore) GetMany() ([]User, error) {
 	}
 	return users, nil
 }
-
-func (store *SqlUserStore) truncate() error {
-	_, err := store.conn.Exec(context.Background(), "DELETE FROM users")
-	return err
-}

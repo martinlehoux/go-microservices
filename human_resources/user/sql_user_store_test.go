@@ -1,10 +1,18 @@
+//go:build intg
+
 package user
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func (store *SqlUserStore) truncate() error {
+	_, err := store.conn.Exec(context.Background(), "DELETE FROM users")
+	return err
+}
 
 func TestSave(t *testing.T) {
 	assert := assert.New(t)

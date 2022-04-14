@@ -1,11 +1,19 @@
+//go:build intg
+
 package account
 
 import (
+	"context"
 	"go-microservices/common"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func (store *SqlAccountStore) truncate() error {
+	_, err := store.conn.Exec(context.Background(), "DELETE FROM accounts")
+	return err
+}
 
 func TestSave(t *testing.T) {
 	assert := assert.New(t)

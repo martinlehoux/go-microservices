@@ -1,3 +1,5 @@
+//go:build spec
+
 package authentication
 
 import (
