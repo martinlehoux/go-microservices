@@ -15,13 +15,13 @@ func NewFakeAccountStore() FakeAccountStore {
 }
 
 func (store *FakeAccountStore) Save(account Account) error {
-	store.accounts[account.Id] = account
+	store.accounts[account.id] = account
 	return nil
 }
 
 func (store *FakeAccountStore) LoadForIdentifier(identifier string) (Account, error) {
 	for _, account := range store.accounts {
-		if account.Identifier == identifier {
+		if account.identifier == identifier {
 			return account, nil
 		}
 	}

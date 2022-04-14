@@ -29,12 +29,12 @@ func (service *HumanResourcesService) Register(email string) error {
 
 	err = service.userStore.Save(user)
 	if err != nil {
-		log.Printf("failed to save user %s: %s", user.Id, err)
+		log.Printf("failed to save user %s: %s", user.GetID(), err)
 		return err
 	}
-	log.Printf("user %s saved", user.Id)
+	log.Printf("user %s saved", user.GetID())
 
-	log.Printf("successfully registered user %s", user.Id)
+	log.Printf("successfully registered user %s", user.GetID())
 	return nil
 }
 

@@ -20,7 +20,7 @@ func NewSqlUserStore() SqlUserStore {
 }
 
 func (store *SqlUserStore) Save(user User) error {
-	_, err := store.conn.Exec(context.Background(), "INSERT INTO users (id, preferred_name, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET preferred_name = EXCLUDED.preferred_name", user.Id, user.PreferredName, user.Email)
+	_, err := store.conn.Exec(context.Background(), "INSERT INTO users (id, preferred_name, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET preferred_name = EXCLUDED.preferred_name", user.id, user.preferredName, user.email)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func (store *SqlUserStore) Save(user User) error {
 
 func (store *SqlUserStore) Load(userId UserID) (User, error) {
 	var user User
-	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE id = $1", userId).Scan(&user.Id, &user.PreferredName, &user.Email)
+	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE id = $1", userId).Scan(&user.id, &user.preferredName, &user.email)
 	return user, err
 }
 
@@ -48,7 +48,7 @@ func (store *SqlUserStore) GetMany() ([]User, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var user User
-		err := rows.Scan(&user.Id, &user.PreferredName, &user.Email)
+		err := rows.Scan(&user.id, &user.preferredName, &user.email)
 		if err != nil {
 			return users, err
 		}

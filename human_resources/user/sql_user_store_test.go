@@ -29,7 +29,7 @@ func TestSave(t *testing.T) {
 		err := repository.Save(user)
 
 		assert.Nil(err, "the save should succeed")
-		savedUser, _ := repository.Load(user.Id)
+		savedUser, _ := repository.Load(user.id)
 		assert.Equal(user, savedUser, "the user should be saved exactly")
 	})
 }
@@ -73,7 +73,7 @@ func TestGetMany(t *testing.T) {
 
 		assert.Nil(err, "the get should succeed")
 		assert.Equal(2, len(users), "there should be two users")
-		assert.Equal("john", users[0].PreferredName, "the first user should be john")
-		assert.Equal("jane", users[1].PreferredName, "the second user should be jane")
+		assert.Equal("john", users[0].preferredName, "the first user should be john")
+		assert.Equal("jane", users[1].preferredName, "the second user should be jane")
 	})
 }
