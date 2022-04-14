@@ -29,9 +29,9 @@ func TestRegister(t *testing.T) {
 	t.Run("it should register an account", func(t *testing.T) {
 		err := service.Register("identifier", "password")
 
-		assert.Nil(err, "the registration should succeed")
+		assert.NoError(err, "the registration should succeed")
 		_, err = service.accountStore.LoadForIdentifier("identifier")
-		assert.Nil(err, "the account should be saved")
+		assert.NoError(err, "the account should be saved")
 	})
 
 	t.Run("it should abort if the account already exists", func(t *testing.T) {
@@ -73,8 +73,7 @@ func TestAuthenticate(t *testing.T) {
 
 		token, signature, err := service.Authenticate("identifier", "password")
 
-		assert.Nil(err, "the authentication should succeed")
-		assert.Equal(token.Identifier, "identifier", "the token should be encrypted")
+		assert.NoError(err, "the authentication should succeed")
 		assert.NotEmpty(signature, "the signature should exist")
 	})
 }
