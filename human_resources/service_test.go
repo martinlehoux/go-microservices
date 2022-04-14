@@ -5,31 +5,30 @@ package human_resources
 import (
 	"go-microservices/human_resources/user"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func testModule() (*HumanResourcesService, user.UserStore) {
+func TestRegister(t *testing.T) {
+	assert := assert.New(t)
 	userStore := user.NewFakeUserStore()
 	service := HumanResourcesService{userStore: &userStore}
-	return &service, &userStore
-}
+	t.Cleanup(func() {
+		userStore.Cleanup()
+	})
 
-func TestUserRegisterMissingUser(t *testing.T) {
-	service, _ := testModule()
+	t.Run("it should successfully register a non existing email", func(t *testing.T) {
+		err := service.Register("john@doe.com")
 
-	err := service.Register("test@test.com")
+		assert.NoError(err, "expected Register to not error")
+		isEmailUsed, _ := userStore.EmailExists("john@doe.com")
+		assert.True(isEmailUsed, "expected user to be saved")
+	})
 
-	if err != nil {
-		t.Errorf("expected Register not to error but got: %s", err)
-	}
-}
+	t.Run("it should fail to register an existing email", func(t *testing.T) {
+		service.Register("john@doe.com")
+		err := service.Register("john@doe.com")
 
-func TestUserRegisterExistingUser(t *testing.T) {
-	service, userStore := testModule()
-	userStore.Save(user.NewUser(user.NewUserPayload{Email: "test@test.com"}))
-
-	err := service.Register("test@test.com")
-
-	if err == nil {
-		t.Errorf("expected Register to error but got nothing")
-	}
+		assert.ErrorContains(err, "email already used", "expected Register to error")
+	})
 }
