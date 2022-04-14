@@ -1,9 +1,9 @@
-database_url := "postgres://user:password@localhost:5432/authentication?sslmode=disable"
+database_base_url := "postgres://user:password@localhost:5432"
 
 all: test lint build
 
 test:
-  go test ./...
+  go test -p 1 ./...
 
 lint:
   staticcheck ./...
@@ -13,5 +13,8 @@ lint:
 build:
   go build
 
-migrate DIRECTION:
-  migrate -path=./authentication/migrations -database={{database_url}} {{DIRECTION}}
+migrate SERVICE DIRECTION:
+  migrate -path=./{{SERVICE}}/migrations -database="{{database_base_url}}/{{SERVICE}}?sslmode=disable" {{DIRECTION}}
+
+create-database SERVICE:
+  PGPASSWORD=password psql -h localhost -U user -w -d postgres -c "CREATE DATABASE {{SERVICE}};"

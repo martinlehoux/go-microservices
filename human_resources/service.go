@@ -2,25 +2,19 @@ package human_resources
 
 import (
 	"errors"
+	"go-microservices/human_resources/user"
 	"log"
 )
 
-type UserService struct {
-	userStore UserStore
+type HumanResourcesService struct {
+	userStore user.UserStore
 }
 
-func Bootstrap() *UserService {
-	store := bootstrapFakeUserStore()
-	return &UserService{
-		userStore: &store,
-	}
-}
-
-func (service *UserService) Register(email string) error {
+func (service *HumanResourcesService) Register(email string) error {
 	var err error
 	log.Printf("starting user registration for email %s", email)
 
-	emailUsed, err := service.userStore.emailExists(email)
+	emailUsed, err := service.userStore.EmailExists(email)
 	if err != nil {
 		log.Printf("failed to check if email %s exists: %s", email, err)
 		return err
@@ -31,9 +25,9 @@ func (service *UserService) Register(email string) error {
 		return err
 	}
 
-	user := NewUser(NewUserPayload{Email: email, PreferredName: ""})
+	user := user.NewUser(user.NewUserPayload{Email: email, PreferredName: ""})
 
-	err = service.userStore.save(user)
+	err = service.userStore.Save(user)
 	if err != nil {
 		log.Printf("failed to save user %s: %s", user.Id, err)
 		return err
@@ -44,10 +38,10 @@ func (service *UserService) Register(email string) error {
 	return nil
 }
 
-func (service *UserService) GetUsers() ([]User, error) {
+func (service *HumanResourcesService) GetUsers() ([]user.User, error) {
 	var err error
 
-	users, err := service.userStore.getMany()
+	users, err := service.userStore.GetMany()
 
 	return users, err
 }

@@ -1,12 +1,13 @@
 package human_resources
 
 import (
+	"go-microservices/human_resources/user"
 	"testing"
 )
 
-func testModule() (*UserService, UserStore) {
-	userStore := bootstrapFakeUserStore()
-	service := UserService{userStore: &userStore}
+func testModule() (*HumanResourcesService, user.UserStore) {
+	userStore := user.NewFakeUserStore()
+	service := HumanResourcesService{userStore: &userStore}
 	return &service, &userStore
 }
 
@@ -22,7 +23,7 @@ func TestUserRegisterMissingUser(t *testing.T) {
 
 func TestUserRegisterExistingUser(t *testing.T) {
 	service, userStore := testModule()
-	userStore.save(NewUser(NewUserPayload{Email: "test@test.com"}))
+	userStore.Save(user.NewUser(user.NewUserPayload{Email: "test@test.com"}))
 
 	err := service.Register("test@test.com")
 

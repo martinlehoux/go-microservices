@@ -6,6 +6,6 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: authentication
+      POSTGRES_DB: postgres
     ports:
       - 5432:5432

@@ -1,4 +1,4 @@
-package human_resources
+package user
 
 import "go-microservices/common"
 
@@ -21,4 +21,8 @@ func NewUser(payload NewUserPayload) User {
 		PreferredName: payload.PreferredName,
 		Email:         payload.Email,
 	}
+}
+
+func (user *User) Rename(preferredName string) {
+	user.PreferredName = preferredName
 }

@@ -10,9 +10,9 @@ type UserRegisterForm struct {
 	Email string `form:"email"`
 }
 
-func BootstrapHttpController(router fiber.Router, userService *UserService) {
+func BootstrapHttpController(router fiber.Router, humanResourcesService *HumanResourcesService) {
 	router.Get("/", func(ctx *fiber.Ctx) error {
-		users, err := userService.GetUsers()
+		users, err := humanResourcesService.GetUsers()
 		if err != nil {
 			return err
 		}
@@ -29,7 +29,7 @@ func BootstrapHttpController(router fiber.Router, userService *UserService) {
 		if err != nil {
 			return common.SendError(ctx, err)
 		}
-		err = userService.Register(form.Email)
+		err = humanResourcesService.Register(form.Email)
 		if err != nil {
 			return common.SendError(ctx, err)
 		}
