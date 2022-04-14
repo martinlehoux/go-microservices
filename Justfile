@@ -2,8 +2,13 @@ database_base_url := "postgres://user:password@localhost:5432"
 
 all: test lint build
 
-test:
-  go test -p 1 ./...
+test: spec intg
+
+spec:
+  go test -tags spec ./...
+
+intg:
+  go test -tags intg -p 1 ./...
 
 lint:
   staticcheck ./...
