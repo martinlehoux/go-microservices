@@ -21,7 +21,7 @@ func (store *FakeUserStore) Load(userId UserID) (User, error) {
 }
 
 func (store *FakeUserStore) Save(user User) error {
-	store.users[user.Id] = user
+	store.users[user.id] = user
 	return nil
 }
 
@@ -35,7 +35,7 @@ func (store *FakeUserStore) GetMany() ([]User, error) {
 
 func (store *FakeUserStore) EmailExists(email string) (bool, error) {
 	for _, user := range store.users {
-		if user.Email == email {
+		if user.email == email {
 			return true, nil
 		}
 	}

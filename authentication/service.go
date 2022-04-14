@@ -60,11 +60,11 @@ func (service *AuthenticationService) Register(identifier string, password strin
 
 	err = service.accountStore.Save(account)
 	if err != nil {
-		log.Printf("failed to save account %s: %s", account.Id, err)
+		log.Printf("failed to save account %s: %s", account.GetID(), err)
 		return err
 	}
 
-	log.Printf("successfully registered account %s", account.Id)
+	log.Printf("successfully registered account %s", account.GetID())
 	return nil
 }
 

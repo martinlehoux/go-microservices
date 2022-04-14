@@ -2,12 +2,12 @@ package user
 
 import "go-microservices/common"
 
-type UserID common.ID
+type UserID struct{ common.ID }
 
 type User struct {
-	Id            UserID
-	PreferredName string
-	Email         string
+	id            UserID
+	preferredName string
+	email         string
 }
 
 type NewUserPayload struct {
@@ -17,12 +17,16 @@ type NewUserPayload struct {
 
 func NewUser(payload NewUserPayload) User {
 	return User{
-		Id:            UserID(common.CreateID()),
-		PreferredName: payload.PreferredName,
-		Email:         payload.Email,
+		id:            UserID{common.CreateID()},
+		preferredName: payload.PreferredName,
+		email:         payload.Email,
 	}
 }
 
 func (user *User) Rename(preferredName string) {
-	user.PreferredName = preferredName
+	user.preferredName = preferredName
+}
+
+func (user *User) GetID() UserID {
+	return user.id
 }

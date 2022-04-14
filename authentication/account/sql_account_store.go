@@ -20,7 +20,7 @@ func NewSqlAccountStore() SqlAccountStore {
 }
 
 func (store *SqlAccountStore) Save(account Account) error {
-	_, err := store.conn.Exec(context.Background(), "INSERT INTO accounts (id, identifier, hashed_password) VALUES ($1, $2, $3)", account.Id, account.Identifier, account.HashedPassword)
+	_, err := store.conn.Exec(context.Background(), "INSERT INTO accounts (id, identifier, hashed_password) VALUES ($1, $2, $3)", account.id, account.identifier, account.hashedPassword)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (store *SqlAccountStore) Save(account Account) error {
 func (store *SqlAccountStore) LoadForIdentifier(identifier string) (Account, error) {
 	var account = Account{}
 
-	err := store.conn.QueryRow(context.Background(), "SELECT id, identifier, hashed_password FROM accounts WHERE identifier = $1", identifier).Scan(&account.Id, &account.Identifier, &account.HashedPassword)
+	err := store.conn.QueryRow(context.Background(), "SELECT id, identifier, hashed_password FROM accounts WHERE identifier = $1", identifier).Scan(&account.id, &account.identifier, &account.hashedPassword)
 
 	return account, err
 }
