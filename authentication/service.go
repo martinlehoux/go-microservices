@@ -1,10 +1,7 @@
 package authentication
 
 import (
-	"crypto"
-	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha512"
 	"errors"
 	"go-microservices/authentication/account"
 	"go-microservices/common"
@@ -18,30 +15,30 @@ type AuthenticationService struct {
 	privateKey   rsa.PrivateKey
 }
 
-func (service *AuthenticationService) Authenticate(identifier string, password string) (token common.Token, signature []byte, err error) {
+func (service *AuthenticationService) Authenticate(identifier string, password string) ([]byte, error) {
 	log.Printf("starting authentication for identifier %s", identifier)
 
 	account, err := service.accountStore.LoadForIdentifier(identifier)
 	if err != nil {
 		log.Printf("failed to find account for identifier %s: %s", identifier, err)
-		return common.Token{}, nil, err
+		return nil, err
 	}
 
 	hashedPassword := service.hashPassword(password)
 	if !account.ValidatePassword(hashedPassword) {
 		log.Printf("failed to authenticate account for identifier %s: password mismatch", identifier)
-		return common.Token{}, nil, errors.New("password mismatch")
+		return nil, errors.New("password mismatch")
 	}
 
-	token = account.CreateToken()
+	token := account.CreateToken()
 
-	signedToken, err := service.signToken(token)
+	signedToken, err := common.SignToken(token, service.privateKey)
 	if err != nil {
 		log.Printf("failed to sign token for identifier %s: %s", identifier, err)
-		return common.Token{}, nil, errors.New("failed to sign token")
+		return nil, errors.New("failed to sign token")
 	}
 
-	return token, signedToken, nil
+	return signedToken, nil
 }
 
 func (service *AuthenticationService) Register(identifier string, password string) error {
@@ -84,13 +81,4 @@ func (service *AuthenticationService) ensureIdentifierNotUsed(identifier string)
 
 	log.Printf("successfully ensured identifier %s is not used", identifier)
 	return nil
-}
-
-func (service *AuthenticationService) signToken(token common.Token) ([]byte, error) {
-	msg, err := token.Bytes()
-	if err != nil {
-		return nil, err
-	}
-	digest := sha512.Sum512(msg)
-	return rsa.SignPKCS1v15(rand.Reader, &service.privateKey, crypto.SHA512, digest[:])
 }

@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"go-microservices/authentication/account"
-	"go-microservices/common"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,27 +50,25 @@ func TestAuthenticate(t *testing.T) {
 	})
 
 	t.Run("it should abort if identifier does not exist", func(t *testing.T) {
-		token, signature, err := service.Authenticate("identifier", "password")
+		signature, err := service.Authenticate("identifier", "password")
 
-		assert.Nil(signature)
-		assert.Equal(token, common.Token{})
+		assert.Nil(signature, "the signature should be empty")
 		assert.ErrorContains(err, "account not found", "the authentication should fail")
 	})
 
 	t.Run("it should abort if the password does not match", func(t *testing.T) {
 		service.Register("identifier", "password")
 
-		token, signature, err := service.Authenticate("identifier", "wrong password")
+		signature, err := service.Authenticate("identifier", "wrong password")
 
 		assert.Nil(signature)
-		assert.Equal(token, common.Token{})
 		assert.ErrorContains(err, "password mismatch", "the authentication should fail")
 	})
 
 	t.Run("it should authenticate and return an encrypted token", func(t *testing.T) {
 		service.Register("identifier", "password")
 
-		token, signature, err := service.Authenticate("identifier", "password")
+		signature, err := service.Authenticate("identifier", "password")
 
 		assert.NoError(err, "the authentication should succeed")
 		assert.NotEmpty(signature, "the signature should exist")
