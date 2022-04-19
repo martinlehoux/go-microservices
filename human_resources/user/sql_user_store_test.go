@@ -85,3 +85,20 @@ func TestGetMany(t *testing.T) {
 		assert.Equal("jane", users[1].preferredName, "the second user should be jane")
 	})
 }
+
+func TestGetByEmail(t *testing.T) {
+	assert := assert.New(t)
+	repository := NewSqlUserStore()
+	t.Cleanup(func() {
+		repository.truncate()
+	})
+
+	t.Run("it should return the User", func(t *testing.T) {
+		repository.Save(NewUser(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
+
+		user, err := repository.GetByEmail("john@doe.com")
+
+		assert.NoError(err, "the get should succeed")
+		assert.Equal("john", user.preferredName, "the user should be john")
+	})
+}
