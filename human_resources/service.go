@@ -10,7 +10,7 @@ type HumanResourcesService struct {
 	userStore user.UserStore
 }
 
-func (service *HumanResourcesService) Register(email string) error {
+func (service *HumanResourcesService) Register(email string, preferredName string) error {
 	var err error
 	log.Printf("starting user registration for email %s", email)
 
@@ -25,7 +25,7 @@ func (service *HumanResourcesService) Register(email string) error {
 		return err
 	}
 
-	user := user.NewUser(user.NewUserPayload{Email: email, PreferredName: ""})
+	user := user.NewUser(user.NewUserPayload{Email: email, PreferredName: preferredName})
 
 	err = service.userStore.Save(user)
 	if err != nil {

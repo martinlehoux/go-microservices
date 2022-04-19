@@ -30,3 +30,7 @@ func (user *User) Rename(preferredName string) {
 func (user *User) GetID() UserID {
 	return user.id
 }
+
+func (user *User) GetEmail() string {
+	return user.email
+}
