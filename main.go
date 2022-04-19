@@ -10,11 +10,12 @@ import (
 )
 
 func main() {
+	privateKey := common.LoadPrivateKey("id_rsa")
 	app := fiber.New()
-	authenticationService := authentication.Bootstrap(common.LoadPrivateKey("id_rsa"))
+	authenticationService := authentication.Bootstrap(privateKey)
 	authentication.BootstrapHttpController(app.Group("/auth"), authenticationService)
 	userService := human_resources.Bootstrap()
-	human_resources.BootstrapHttpController(app.Group("/users"), userService)
+	human_resources.BootstrapHttpController(app.Group("/users"), userService, privateKey.PublicKey)
 
 	app.Get("/ping", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("pong")
