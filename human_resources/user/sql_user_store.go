@@ -40,7 +40,7 @@ func (store *SqlUserStore) EmailExists(email string) (bool, error) {
 }
 
 func (store *SqlUserStore) GetMany() ([]User, error) {
-	var users []User
+	users := make([]User, 0)
 	rows, err := store.conn.Query(context.Background(), "SELECT id, preferred_name, email FROM users")
 	if err != nil {
 		return users, err
