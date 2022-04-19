@@ -18,16 +18,16 @@ func TestRegister(t *testing.T) {
 	})
 
 	t.Run("it should successfully register a non existing email", func(t *testing.T) {
-		err := service.Register("john@doe.com")
+		err := service.Register("john@doe.com", "John")
 
 		assert.NoError(err, "expected Register to not error")
-		isEmailUsed, _ := userStore.EmailExists("john@doe.com")
-		assert.True(isEmailUsed, "expected user to be saved")
+		user, _ := userStore.GetByEmail("john@doe.com")
+		assert.Equal(user.GetEmail(), "john@doe.com", "the email should match")
 	})
 
 	t.Run("it should fail to register an existing email", func(t *testing.T) {
-		service.Register("john@doe.com")
-		err := service.Register("john@doe.com")
+		service.Register("john@doe.com", "John")
+		err := service.Register("john@doe.com", "John")
 
 		assert.ErrorContains(err, "email already used", "expected Register to error")
 	})
