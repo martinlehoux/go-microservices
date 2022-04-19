@@ -1,9 +1,10 @@
 package common
 
 import (
+	"encoding/json"
 	"log"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
 
@@ -13,12 +14,16 @@ func CreateID() ID {
 	return uuid.New()
 }
 
-func SendError(ctx *fiber.Ctx, err error) error {
-	return ctx.Status(400).JSON(&fiber.Map{"error": err.Error()})
-}
-
 func PanicOnError(err error) {
 	if err != nil {
 		log.Panicf("unhandled error: %s", err.Error())
 	}
 }
+
+func WriteResponse(w http.ResponseWriter, code int, data Data) {
+	w.WriteHeader(code)
+	err := json.NewEncoder(w).Encode(data)
+	PanicOnError(err)
+}
+
+type Data = map[string]interface{}

@@ -17,8 +17,8 @@ func TestPing(t *testing.T) {
 		res, err := http.DefaultClient.Get("http://localhost:3000/ping")
 
 		assert.NoError(err)
-		assert.Equal(200, res.StatusCode)
+		assert.Equal(http.StatusOK, res.StatusCode)
 		body, _ := ioutil.ReadAll(res.Body)
-		assert.Equal("pong", string(body))
+		assert.JSONEq(`{"message":"pong"}`, string(body))
 	})
 }
