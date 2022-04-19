@@ -1,10 +1,19 @@
 package human_resources
 
-import "go-microservices/human_resources/user"
+import (
+	"crypto/rsa"
+	"go-microservices/human_resources/user"
+)
 
-func Bootstrap() *HumanResourcesService {
-	store := user.NewSqlUserStore()
-	return &HumanResourcesService{
-		userStore: &store,
+func Bootstrap(rootPath string, publicKey rsa.PublicKey) *HumanResourcesHttpController {
+	userStore := user.NewSqlUserStore()
+	service := HumanResourcesService{
+		userStore: &userStore,
 	}
+	controller := HumanResourcesHttpController{
+		humanResourcesService: &service,
+		publicKey:             publicKey,
+		rootPath:              rootPath,
+	}
+	return &controller
 }

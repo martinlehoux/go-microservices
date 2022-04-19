@@ -8,33 +8,33 @@ import (
 	"go-microservices/common"
 	"go-microservices/human_resources/user"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHttpRegister(t *testing.T) {
 	assert := assert.New(t)
-	app := fiber.New()
 	userStore := user.NewFakeUserStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
 	service := HumanResourcesService{userStore: &userStore}
-	BootstrapHttpController(app, &service, *publicKey)
+	controller := HumanResourcesHttpController{humanResourcesService: &service, publicKey: *publicKey, rootPath: ""}
 
 	t.Run("it should send a 401 if there is no Token", func(t *testing.T) {
 		req := common.PrepareRequest("POST", "/register", UserRegisterForm{
 			PreferredName: "Shaylyn Ognjan",
 		})
 
-		res, err := app.Test(&req)
+		rr := httptest.NewRecorder()
+		controller.ServeHTTP(rr, &req)
 
-		assert.NoError(err)
-		assert.Equal(401, res.StatusCode)
-		body, _ := ioutil.ReadAll(res.Body)
-		assert.Equal(`{"error":"Unauthorized: request has no authorization header"}`, string(body))
+		assert.Equal(http.StatusUnauthorized, rr.Code)
+		body, _ := ioutil.ReadAll(rr.Body)
+		assert.JSONEq(`{"error":"Unauthorized: request has no authorization header"}`, string(body))
 	})
 
 	t.Run("it should send a 401 if the Token is wrong", func(t *testing.T) {
@@ -44,12 +44,12 @@ func TestHttpRegister(t *testing.T) {
 
 		req.Header.Add("Authorization", "Bearer dummy")
 
-		res, err := app.Test(&req)
+		rr := httptest.NewRecorder()
+		controller.ServeHTTP(rr, &req)
 
-		assert.NoError(err)
-		assert.Equal(401, res.StatusCode)
-		body, _ := ioutil.ReadAll(res.Body)
-		assert.Equal(`{"error":"Unauthorized: invalid character 'd' looking for beginning of value"}`, string(body))
+		assert.Equal(http.StatusUnauthorized, rr.Code)
+		body, _ := ioutil.ReadAll(rr.Body)
+		assert.JSONEq(`{"error":"Unauthorized: invalid character 'd' looking for beginning of value"}`, string(body))
 	})
 
 	t.Run("it should send a 201 and register the user if the Token is valid", func(t *testing.T) {
@@ -64,14 +64,14 @@ func TestHttpRegister(t *testing.T) {
 		rawToken, _ := common.SignToken(token, *privateKey)
 		req.Header.Add("Authorization", "Bearer "+string(rawToken))
 
-		res, err := app.Test(&req)
+		rr := httptest.NewRecorder()
+		controller.ServeHTTP(rr, &req)
 
-		assert.NoError(err)
-		assert.Equal(201, res.StatusCode)
-		body, _ := ioutil.ReadAll(res.Body)
-		assert.Equal(`{"success":true}`, string(body))
+		assert.Equal(http.StatusCreated, rr.Code)
+		body, _ := ioutil.ReadAll(rr.Body)
+		assert.JSONEq(`{"success":true}`, string(body))
 
-		_, err = userStore.GetByEmail("phyliss@otto.com")
+		_, err := userStore.GetByEmail("phyliss@otto.com")
 		assert.NoError(err)
 	})
 }
