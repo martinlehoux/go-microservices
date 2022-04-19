@@ -23,3 +23,7 @@ migrate SERVICE DIRECTION:
 
 create-database SERVICE:
   PGPASSWORD=password psql -h localhost -U user -w -d postgres -c "CREATE DATABASE {{SERVICE}};"
+
+database SERVICE:
+  just create-database {{SERVICE}}
+  just migrate {{SERVICE}} up
