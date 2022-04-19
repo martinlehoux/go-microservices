@@ -56,3 +56,9 @@ func (store *SqlUserStore) GetMany() ([]User, error) {
 	}
 	return users, nil
 }
+
+func (store *SqlUserStore) GetByEmail(email string) (User, error) {
+	var user User
+	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE email = $1", email).Scan(&user.id, &user.preferredName, &user.email)
+	return user, err
+}

@@ -33,6 +33,7 @@ func (store *FakeUserStore) GetMany() ([]User, error) {
 	return users, nil
 }
 
+// Deprecated: Prefer GetByEmail
 func (store *FakeUserStore) EmailExists(email string) (bool, error) {
 	for _, user := range store.users {
 		if user.email == email {
@@ -40,6 +41,15 @@ func (store *FakeUserStore) EmailExists(email string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func (store *FakeUserStore) GetByEmail(email string) (User, error) {
+	for _, user := range store.users {
+		if user.email == email {
+			return user, nil
+		}
+	}
+	return User{}, errors.New("User not found")
 }
 
 func (store *FakeUserStore) Cleanup() {
