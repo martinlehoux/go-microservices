@@ -1,6 +1,8 @@
 package user
 
-import "go-microservices/common"
+import (
+	"go-microservices/common"
+)
 
 type UserID struct{ common.ID }
 

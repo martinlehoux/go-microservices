@@ -14,12 +14,13 @@ func main() {
 	humanResourcesController := human_resources.Bootstrap("/users", privateKey.PublicKey)
 
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		common.WriteResponse(w, http.StatusOK, common.Data{"message": "pong"})
+		common.WriteResponse(w, http.StatusOK, common.AnyDto{"message": "pong"})
 	})
 
 	http.Handle("/users/", humanResourcesController)
 	http.Handle("/auth/", authenticationController)
 
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	err := http.ListenAndServe(":3000", nil)
+	log.Fatal(err)
 
 }

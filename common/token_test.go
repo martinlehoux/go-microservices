@@ -1,8 +1,11 @@
+//go:build spec
+
 package common
 
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/base64"
 	"testing"
 	"time"
 
@@ -93,7 +96,7 @@ func TestExtractToken(t *testing.T) {
 		req.Header.Add("Authorization", "Bearer ABC")
 
 		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
-		assert.ErrorContains(err, "invalid character")
+		assert.ErrorContains(err, "error decoding token")
 		assert.Equal(Token{}, token)
 	})
 
@@ -101,7 +104,8 @@ func TestExtractToken(t *testing.T) {
 		token := Token{CreatedAt: time.Now(), Identifier: "test"}
 		blob, _ := SignToken(token, *privateKey)
 		req := PrepareRequest("POST", "/any", nil)
-		req.Header.Add("Authorization", "Bearer "+string(blob))
+		encoded := base64.StdEncoding.EncodeToString(blob)
+		req.Header.Add("Authorization", "Bearer "+encoded)
 
 		parsedToken, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
 		assert.NoError(err, "the parsing should be successful")
