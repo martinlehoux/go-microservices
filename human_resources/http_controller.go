@@ -3,8 +3,8 @@ package human_resources
 import (
 	"crypto/rsa"
 	"encoding/json"
-	"fmt"
 	"go-microservices/common"
+	"go-microservices/human_resources/user"
 	"net/http"
 	"strings"
 )
@@ -25,37 +25,40 @@ func (controller *HumanResourcesHttpController) ServeHTTP(w http.ResponseWriter,
 	}
 }
 
-type UserRegisterForm struct {
-	PreferredName string `json:"preferredName"`
+type UserRegisterDto struct {
+	PreferredName string `json:"preferred_name"`
 }
 
 func (controller *HumanResourcesHttpController) Register(w http.ResponseWriter, req *http.Request) {
 	var err error
+
 	token, err := common.ExtractToken(req.Header.Get("Authorization"), controller.publicKey)
 	if err != nil {
-		common.WriteResponse(w, http.StatusUnauthorized, common.Data{"error": fmt.Sprintf("Unauthorized: %s", err)})
-		return
-	}
-	form := new(UserRegisterForm)
-	err = json.NewDecoder(req.Body).Decode(form)
-	if err != nil {
-		common.WriteResponse(w, http.StatusBadRequest, common.Data{"error": err.Error()})
-		return
-	}
-	err = controller.humanResourcesService.Register(token.Identifier, form.PreferredName)
-	if err != nil {
-		common.WriteResponse(w, http.StatusBadRequest, common.Data{"error": err.Error()})
+		common.WriteError(w, http.StatusUnauthorized, err)
 		return
 	}
 
-	common.WriteResponse(w, http.StatusCreated, common.Data{"success": true})
+	payload := new(UserRegisterDto)
+	err = json.NewDecoder(req.Body).Decode(payload)
+	if err != nil {
+		common.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = controller.humanResourcesService.Register(token.Identifier, payload.PreferredName)
+	if err != nil {
+		common.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	common.WriteResponse(w, http.StatusCreated, common.OperationDto{Success: true})
 }
 
 func (controller *HumanResourcesHttpController) GetUsers(w http.ResponseWriter, req *http.Request) {
 	users, err := controller.humanResourcesService.GetUsers()
 	if err != nil {
-		common.WriteResponse(w, http.StatusBadRequest, common.Data{"error": err.Error()})
+		common.WriteError(w, http.StatusBadRequest, err)
 	}
 
-	common.WriteResponse(w, http.StatusOK, common.Data{"items": users, "total": len(users)})
+	common.WriteResponse(w, http.StatusOK, user.UserListDto{Items: users, Total: len(users)})
 }

@@ -32,15 +32,17 @@ func (controller *AuthenticationHttpController) Register(w http.ResponseWriter, 
 	form := new(RegisterForm)
 	err = json.NewDecoder(req.Body).Decode(form)
 	if err != nil {
-		common.WriteResponse(w, http.StatusBadRequest, common.Data{"error": err.Error()})
+		common.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
+
 	err = controller.authenticationService.Register(form.Identifier, form.Password)
 	if err != nil {
-		common.WriteResponse(w, http.StatusBadRequest, common.Data{"error": err.Error()})
+		common.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
-	common.WriteResponse(w, http.StatusCreated, common.Data{"success": true})
+
+	common.WriteResponse(w, http.StatusCreated, common.OperationDto{Success: true})
 }
 
 type AuthenticateForm struct {
@@ -51,15 +53,18 @@ type AuthenticateForm struct {
 func (controller *AuthenticationHttpController) Authenticate(w http.ResponseWriter, req *http.Request) {
 	var err error
 	form := new(AuthenticateForm)
+
 	err = json.NewDecoder(req.Body).Decode(form)
 	if err != nil {
-		common.WriteResponse(w, http.StatusBadRequest, common.Data{"error": err.Error()})
+		common.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
+
 	token, err := controller.authenticationService.Authenticate(form.Identifier, form.Password)
 	if err != nil {
-		common.WriteResponse(w, http.StatusBadRequest, common.Data{"error": err.Error()})
+		common.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
-	common.WriteResponse(w, http.StatusOK, common.Data{"token": token})
+
+	common.WriteResponse(w, http.StatusOK, common.AnyDto{"token": token})
 }

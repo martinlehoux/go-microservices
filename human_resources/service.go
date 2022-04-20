@@ -38,10 +38,16 @@ func (service *HumanResourcesService) Register(email string, preferredName strin
 	return nil
 }
 
-func (service *HumanResourcesService) GetUsers() ([]user.User, error) {
+func (service *HumanResourcesService) GetUsers() ([]user.UserDto, error) {
 	var err error
 
 	users, err := service.userStore.GetMany()
 
-	return users, err
+	usersDto := make([]user.UserDto, 0)
+	for _, u := range users {
+		userDto := user.DtoFrom(u)
+		usersDto = append(usersDto, userDto)
+	}
+
+	return usersDto, err
 }

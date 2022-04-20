@@ -7,9 +7,11 @@ import (
 	"crypto/rsa"
 	"crypto/sha512"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -27,7 +29,7 @@ func (token Token) Bytes() ([]byte, error) {
 	encodedBytes := new(bytes.Buffer)
 	err := json.NewEncoder(encodedBytes).Encode(token)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error encoding token: %s", err.Error())
 	}
 	return encodedBytes.Bytes(), nil
 }
@@ -97,9 +99,14 @@ func ExtractToken(authorization string, publicKey rsa.PublicKey) (Token, error) 
 		return Token{}, errors.New("request has invalid authorization header")
 	}
 
-	token, err := ParseToken([]byte(bearer[1]), publicKey)
+	decoded, err := base64.StdEncoding.DecodeString(bearer[1])
 	if err != nil {
-		return Token{}, err
+		return Token{}, fmt.Errorf("error decoding token: %s", err.Error())
+	}
+
+	token, err := ParseToken(decoded, publicKey)
+	if err != nil {
+		return Token{}, fmt.Errorf("invalid token: %s", err.Error())
 	}
 
 	return token, nil

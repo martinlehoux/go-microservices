@@ -20,10 +20,24 @@ func PanicOnError(err error) {
 	}
 }
 
-func WriteResponse(w http.ResponseWriter, code int, data Data) {
+func WriteResponse(w http.ResponseWriter, code int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	err := json.NewEncoder(w).Encode(data)
 	PanicOnError(err)
 }
 
-type Data = map[string]interface{}
+func WriteError(w http.ResponseWriter, code int, err error) {
+	log.Printf("error: %s", err.Error())
+	WriteResponse(w, code, ErrorDto{Error: err.Error()})
+}
+
+type ErrorDto struct {
+	Error string `json:"error"`
+}
+
+type OperationDto struct {
+	Success bool `json:"success"`
+}
+
+type AnyDto map[string]interface{}
