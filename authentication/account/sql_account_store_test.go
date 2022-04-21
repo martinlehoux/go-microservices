@@ -17,19 +17,19 @@ func (store *SqlAccountStore) truncate() error {
 
 func TestSave(t *testing.T) {
 	assert := assert.New(t)
-	repository := NewSqlAccountStore()
+	store := NewSqlAccountStore()
 	t.Cleanup(func() {
-		repository.truncate()
+		store.truncate()
 	})
 
 	t.Run("it should save the Account", func(t *testing.T) {
 		identifier := common.CreateID().String()
 		account := NewAccount(identifier, []byte("password"))
 
-		err := repository.Save(account)
+		err := store.Save(account)
 
 		assert.NoError(err, "the save should succeed")
-		savedAccount, err := repository.LoadForIdentifier(identifier)
+		savedAccount, err := store.LoadForIdentifier(identifier)
 		assert.NoError(err, "the account should be saved")
 		assert.Equal(account, savedAccount, "the account should be saved exactly")
 	})
@@ -38,22 +38,22 @@ func TestSave(t *testing.T) {
 		t.Skip("there is not update for now")
 		identifier := common.CreateID().String()
 		account := NewAccount(identifier, []byte("password"))
-		repository.Save(account)
+		store.Save(account)
 	})
 }
 
 func TestLoadForIdentifier(t *testing.T) {
 	assert := assert.New(t)
-	repository := NewSqlAccountStore()
+	store := NewSqlAccountStore()
 	t.Cleanup(func() {
-		repository.truncate()
+		store.truncate()
 	})
 
 	t.Run("it should not get an Account with antoher identifier", func(t *testing.T) {
 		identifier := common.CreateID().String()
-		repository.Save(NewAccount(identifier, []byte("password")))
+		store.Save(NewAccount(identifier, []byte("password")))
 
-		account, err := repository.LoadForIdentifier("wrong")
+		account, err := store.LoadForIdentifier("wrong")
 
 		assert.Equal(account, Account{}, "the account should be empty")
 		assert.ErrorContains(err, "no rows in result set", "the error should be returned")
@@ -62,9 +62,9 @@ func TestLoadForIdentifier(t *testing.T) {
 	t.Run("it should get an Account with the correct identifier", func(t *testing.T) {
 		identifier := common.CreateID().String()
 		savedAccount := NewAccount(identifier, []byte("password"))
-		repository.Save(savedAccount)
+		store.Save(savedAccount)
 
-		account, err := repository.LoadForIdentifier(identifier)
+		account, err := store.LoadForIdentifier(identifier)
 
 		assert.NoError(err, "the load should succeed")
 		assert.Equal(account, savedAccount, "the account should be empty")

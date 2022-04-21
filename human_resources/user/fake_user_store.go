@@ -12,7 +12,7 @@ func NewFakeUserStore() FakeUserStore {
 	}
 }
 
-func (store *FakeUserStore) Load(userId UserID) (User, error) {
+func (store *FakeUserStore) Get(userId UserID) (User, error) {
 	user, found := store.users[userId]
 	if !found {
 		return user, errors.New("User not found")

@@ -17,7 +17,7 @@ type NewUserPayload struct {
 	Email         string
 }
 
-func NewUser(payload NewUserPayload) User {
+func New(payload NewUserPayload) User {
 	return User{
 		id:            UserID{common.CreateID()},
 		preferredName: payload.PreferredName,

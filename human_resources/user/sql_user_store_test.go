@@ -13,54 +13,58 @@ func (store *SqlUserStore) truncate() {
 	store.conn.Exec(context.Background(), "DELETE FROM users")
 }
 
-func TestSave(t *testing.T) {
+func TestSaveAndGet(t *testing.T) {
 	assert := assert.New(t)
-	repository := NewSqlUserStore()
+	store := NewSqlUserStore()
 
 	t.Run("it should save the User", func(t *testing.T) {
-		t.Cleanup(repository.truncate)
+		t.Cleanup(store.truncate)
 
-		user := NewUser(NewUserPayload{PreferredName: "joe", Email: "joe@doe.com"})
+		user := New(NewUserPayload{PreferredName: "joe", Email: "joe@doe.com"})
 
-		err := repository.Save(user)
+		err := store.Save(user)
 
 		assert.NoError(err, "the save should succeed")
+
+		user, err = store.Get(user.id)
+		assert.NoError(err, "the get should succeed")
+		assert.Equal("joe", user.preferredName, "the user should be joe")
 	})
 
 	t.Run("it should save the latest version of the User", func(t *testing.T) {
-		t.Cleanup(repository.truncate)
+		t.Cleanup(store.truncate)
 
-		user := NewUser(NewUserPayload{PreferredName: "paul", Email: "paul@doe.com"})
-		repository.Save(user)
+		user := New(NewUserPayload{PreferredName: "paul", Email: "paul@doe.com"})
+		store.Save(user)
 		user.Rename("jean paul")
 
-		err := repository.Save(user)
+		err := store.Save(user)
 
 		assert.NoError(err, "the save should succeed")
-		savedUser, _ := repository.Load(user.id)
+		savedUser, _ := store.Get(user.id)
 		assert.Equal(user, savedUser, "the user should be saved exactly")
 	})
 }
 
 func TestEmailExists(t *testing.T) {
 	assert := assert.New(t)
-	repository := NewSqlUserStore()
+	store := NewSqlUserStore()
 
 	t.Run("it should return true if the email exists", func(t *testing.T) {
-		t.Cleanup(repository.truncate)
+		t.Cleanup(store.truncate)
 
-		repository.Save(NewUser(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
+		store.Save(New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
 
-		exists, err := repository.EmailExists("john@doe.com")
+		exists, err := store.EmailExists("john@doe.com")
 
 		assert.NoError(err, "the query should not fail")
 		assert.True(exists, "the email should exist")
 	})
 
 	t.Run("it should return false if the email does not exist", func(t *testing.T) {
-		t.Cleanup(repository.truncate)
+		t.Cleanup(store.truncate)
 
-		exists, err := repository.EmailExists("john@king.com")
+		exists, err := store.EmailExists("john@king.com")
 
 		assert.NoError(err, "the query should not fail")
 		assert.False(exists, "the email should not exist")
@@ -69,15 +73,15 @@ func TestEmailExists(t *testing.T) {
 
 func TestGetMany(t *testing.T) {
 	assert := assert.New(t)
-	repository := NewSqlUserStore()
+	store := NewSqlUserStore()
 
 	t.Run("it should return all the Users", func(t *testing.T) {
-		t.Cleanup(repository.truncate)
+		t.Cleanup(store.truncate)
 
-		repository.Save(NewUser(NewUserPayload{PreferredName: "john", Email: "john@travolta.com"}))
-		repository.Save(NewUser(NewUserPayload{PreferredName: "jane", Email: "jane@roosevelt.com"}))
+		store.Save(New(NewUserPayload{PreferredName: "john", Email: "john@travolta.com"}))
+		store.Save(New(NewUserPayload{PreferredName: "jane", Email: "jane@roosevelt.com"}))
 
-		users, err := repository.GetMany()
+		users, err := store.GetMany()
 
 		assert.NoError(err, "the get should succeed")
 		assert.Equal(2, len(users), "there should be two users")
@@ -86,9 +90,9 @@ func TestGetMany(t *testing.T) {
 	})
 
 	t.Run("it should return an empty slice if there are no users", func(t *testing.T) {
-		t.Cleanup(repository.truncate)
+		t.Cleanup(store.truncate)
 
-		users, err := repository.GetMany()
+		users, err := store.GetMany()
 
 		assert.NoError(err, "the get should succeed")
 		assert.Equal(make([]User, 0), users, "there should be no users")
@@ -97,14 +101,14 @@ func TestGetMany(t *testing.T) {
 
 func TestGetByEmail(t *testing.T) {
 	assert := assert.New(t)
-	repository := NewSqlUserStore()
+	store := NewSqlUserStore()
 
 	t.Run("it should return the User", func(t *testing.T) {
-		t.Cleanup(repository.truncate)
+		t.Cleanup(store.truncate)
 
-		repository.Save(NewUser(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
+		store.Save(New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
 
-		user, err := repository.GetByEmail("john@doe.com")
+		user, err := store.GetByEmail("john@doe.com")
 
 		assert.NoError(err, "the get should succeed")
 		assert.Equal("john", user.preferredName, "the user should be john")
