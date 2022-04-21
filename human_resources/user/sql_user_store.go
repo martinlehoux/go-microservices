@@ -27,7 +27,7 @@ func (store *SqlUserStore) Save(user User) error {
 	return nil
 }
 
-func (store *SqlUserStore) Load(userId UserID) (User, error) {
+func (store *SqlUserStore) Get(userId UserID) (User, error) {
 	var user User
 	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE id = $1", userId).Scan(&user.id, &user.preferredName, &user.email)
 	return user, err

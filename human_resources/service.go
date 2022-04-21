@@ -25,7 +25,7 @@ func (service *HumanResourcesService) Register(email string, preferredName strin
 		return err
 	}
 
-	user := user.NewUser(user.NewUserPayload{Email: email, PreferredName: preferredName})
+	user := user.New(user.NewUserPayload{Email: email, PreferredName: preferredName})
 
 	err = service.userStore.Save(user)
 	if err != nil {
