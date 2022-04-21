@@ -30,3 +30,9 @@ create-database SERVICE:
 database SERVICE:
   just create-database {{SERVICE}}
   just migrate {{SERVICE}} up
+
+generate-migration SERVICE MIGRATION:
+  migrate create -ext sql -dir {{SERVICE}}/migrations -seq {{MIGRATION}}
+
+query-database QUERY:
+  PGPASSWORD=password psql -h localhost -U user -w -d postgres -c "{{QUERY}}"
