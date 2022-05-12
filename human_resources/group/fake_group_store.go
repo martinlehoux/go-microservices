@@ -18,7 +18,7 @@ func NewFakeGroupStore() FakeGroupStore {
 func (store *FakeGroupStore) Get(groupId GroupID) (Group, error) {
 	group, found := store.groups[groupId]
 	if !found {
-		return group, errors.New("Group not found")
+		return group, errors.New("group not found")
 	}
 	return group, nil
 }
@@ -28,11 +28,11 @@ func (store *FakeGroupStore) Save(group Group) error {
 	return nil
 }
 
-func (store *FakeGroupStore) FindForUser(userId user.UserID) ([]Group, error) {
-	groups := make([]Group, 0)
+func (store *FakeGroupStore) FindForUser(userId user.UserID) ([]GroupDto, error) {
+	groups := make([]GroupDto, 0)
 	for _, group := range store.groups {
 		if group.IsMember(userId) {
-			groups = append(groups, group)
+			groups = append(groups, GroupDto{ID: group.id.String(), Name: group.name, Description: group.description, MembersCount: len(group.members)})
 		}
 	}
 	return groups, nil
