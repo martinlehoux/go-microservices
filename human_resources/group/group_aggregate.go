@@ -53,3 +53,7 @@ func (group Group) IsMember(userID user.UserID) bool {
 func (group *Group) Rename(name string) {
 	group.name = name
 }
+
+func (group Group) GetID() GroupID {
+	return group.id
+}

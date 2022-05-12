@@ -3,7 +3,9 @@ package human_resources
 import (
 	"crypto/rsa"
 	"encoding/json"
+	"errors"
 	"go-microservices/common"
+	"go-microservices/human_resources/group"
 	"go-microservices/human_resources/user"
 	"net/http"
 	"strings"
@@ -19,9 +21,12 @@ func (controller *HumanResourcesHttpController) ServeHTTP(w http.ResponseWriter,
 	path := strings.TrimPrefix(req.URL.Path, controller.rootPath)
 	if path == "/register" && req.Method == "POST" {
 		controller.Register(w, req)
-	}
-	if path == "/" && req.Method == "GET" {
+	} else if path == "/" && req.Method == "GET" {
 		controller.GetUsers(w, req)
+	} else if path == "/join_group" && req.Method == "POST" {
+		controller.JoinGroup(w, req)
+	} else {
+		common.WriteError(w, http.StatusNotFound, errors.New("not found"))
 	}
 }
 
@@ -61,4 +66,40 @@ func (controller *HumanResourcesHttpController) GetUsers(w http.ResponseWriter, 
 	}
 
 	common.WriteResponse(w, http.StatusOK, user.UserListDto{Items: users, Total: len(users)})
+}
+
+type UserJoinGroupDto struct {
+	GroupID string `json:"group_id"`
+	UserID  string `json:"user_id"`
+}
+
+func (controller *HumanResourcesHttpController) JoinGroup(w http.ResponseWriter, req *http.Request) {
+	payload := new(UserJoinGroupDto)
+	err := json.NewDecoder(req.Body).Decode(payload)
+	if err != nil {
+		common.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	id, err := common.ParseID(payload.GroupID)
+	if err != nil {
+		common.WriteError(w, http.StatusBadRequest, errors.New("invalid group id"))
+		return
+	}
+	groupId := group.GroupID{id}
+
+	id, err = common.ParseID(payload.UserID)
+	if err != nil {
+		common.WriteError(w, http.StatusBadRequest, errors.New("invalid user id"))
+		return
+	}
+	userId := user.UserID{id}
+
+	err = controller.humanResourcesService.UserJoinGroup(userId, groupId)
+	if err != nil {
+		common.WriteError(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	common.WriteResponse(w, http.StatusCreated, common.OperationDto{Success: true})
 }

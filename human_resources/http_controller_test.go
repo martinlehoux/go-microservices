@@ -8,22 +8,25 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"go-microservices/common"
+	"go-microservices/human_resources/group"
 	"go-microservices/human_resources/user"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHttpRegister(t *testing.T) {
 	assert := assert.New(t)
 	userStore := user.NewFakeUserStore()
+	groupStore := group.NewFakeGroupStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
-	service := HumanResourcesService{userStore: &userStore}
-	controller := HumanResourcesHttpController{humanResourcesService: &service, publicKey: *publicKey, rootPath: ""}
+	service := NewHumanResourcesService(&userStore, &groupStore)
+	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
 
 	t.Run("it should send a 401 if there is no Token", func(t *testing.T) {
 		req := common.PrepareRequest("POST", "/register", UserRegisterDto{
@@ -59,7 +62,6 @@ func TestHttpRegister(t *testing.T) {
 		req := common.PrepareRequest("POST", "/register", UserRegisterDto{
 			PreferredName: "Phyliss Ottó",
 		})
-
 		token := common.Token{
 			CreatedAt:  time.Now(),
 			Identifier: "phyliss@otto.com",
@@ -85,8 +87,8 @@ func TestHttpGetUsers(t *testing.T) {
 	userStore := user.NewFakeUserStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
-	service := HumanResourcesService{userStore: &userStore}
-	controller := HumanResourcesHttpController{humanResourcesService: &service, publicKey: *publicKey, rootPath: ""}
+	service := NewHumanResourcesService(&userStore, nil)
+	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
 
 	t.Run("it should send a 200 with the users", func(t *testing.T) {
 		service.Register("john@doe.com", "John Doe")
@@ -106,5 +108,58 @@ func TestHttpGetUsers(t *testing.T) {
 			},
 			Total: 1,
 		}, payload)
+	})
+}
+
+func TestHttpJoin(t *testing.T) {
+	assert := assert.New(t)
+	userStore := user.NewFakeUserStore()
+	groupStore := group.NewFakeGroupStore()
+	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
+	publicKey := &privateKey.PublicKey
+	service := NewHumanResourcesService(&userStore, &groupStore)
+	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
+
+	t.Run("it should send a 400 if the group_id is not a uuid", func(t *testing.T) {
+		req := common.PrepareRequest("POST", "/join_group", UserJoinGroupDto{GroupID: "dummy", UserID: uuid.NewString()})
+
+		rr := httptest.NewRecorder()
+		controller.ServeHTTP(rr, &req)
+
+		assert.Equal(http.StatusBadRequest, rr.Code)
+		var payload common.ErrorDto
+		json.NewDecoder(rr.Body).Decode(&payload)
+		assert.Equal("invalid group id", payload.Error)
+	})
+
+	t.Run("it should send a 400 if the user_id is not a uuid", func(t *testing.T) {
+		req := common.PrepareRequest("POST", "/join_group", UserJoinGroupDto{GroupID: uuid.NewString(), UserID: "dummy"})
+
+		rr := httptest.NewRecorder()
+		controller.ServeHTTP(rr, &req)
+
+		assert.Equal(http.StatusBadRequest, rr.Code)
+		var payload common.ErrorDto
+		json.NewDecoder(rr.Body).Decode(&payload)
+		assert.Equal("invalid user id", payload.Error)
+	})
+
+	t.Run("it should send a 201 and make the user join", func(t *testing.T) {
+		userToJoin := user.New(user.NewUserPayload{Email: "john@doe.com", PreferredName: "John Doe"})
+		groupToJoin := group.New("Group 1", "")
+		userStore.Save(userToJoin)
+		groupStore.Save(groupToJoin)
+		req := common.PrepareRequest("POST", "/join_group", UserJoinGroupDto{GroupID: groupToJoin.GetID().String(), UserID: userToJoin.GetID().String()})
+
+		rr := httptest.NewRecorder()
+		controller.ServeHTTP(rr, &req)
+
+		assert.Equal(http.StatusCreated, rr.Code)
+		var payload common.OperationDto
+		json.NewDecoder(rr.Body).Decode(&payload)
+		assert.True(payload.Success)
+
+		groupUpdated, _ := groupStore.Get(groupToJoin.GetID())
+		assert.True(groupUpdated.IsMember(userToJoin.GetID()))
 	})
 }

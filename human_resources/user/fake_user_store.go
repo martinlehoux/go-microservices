@@ -15,7 +15,7 @@ func NewFakeUserStore() FakeUserStore {
 func (store *FakeUserStore) Get(userId UserID) (User, error) {
 	user, found := store.users[userId]
 	if !found {
-		return user, errors.New("User not found")
+		return user, errors.New("user not found")
 	}
 	return user, nil
 }
@@ -49,7 +49,7 @@ func (store *FakeUserStore) GetByEmail(email string) (User, error) {
 			return user, nil
 		}
 	}
-	return User{}, errors.New("User not found")
+	return User{}, errors.New("user not found")
 }
 
 func (store *FakeUserStore) Cleanup() {
