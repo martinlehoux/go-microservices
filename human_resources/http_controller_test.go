@@ -5,7 +5,6 @@ package human_resources
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/base64"
 	"encoding/json"
 	"go-microservices/common"
 	"go-microservices/human_resources/group"
@@ -29,9 +28,9 @@ func TestHttpRegister(t *testing.T) {
 	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
 
 	t.Run("it should send a 401 if there is no Token", func(t *testing.T) {
-		req := common.PrepareRequest("POST", "/register", UserRegisterDto{
+		req := common.NewRequestBuilder("POST", "/register").WithPayload(UserRegisterDto{
 			PreferredName: "Shaylyn Ognjan",
-		})
+		}).Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
@@ -43,9 +42,9 @@ func TestHttpRegister(t *testing.T) {
 	})
 
 	t.Run("it should send a 401 if the Token is wrong", func(t *testing.T) {
-		req := common.PrepareRequest("POST", "/register", UserRegisterDto{
+		req := common.NewRequestBuilder("POST", "/register").WithPayload(UserRegisterDto{
 			PreferredName: "John Doe",
-		})
+		}).Build()
 
 		req.Header.Add("Authorization", "Bearer dummy")
 
@@ -59,15 +58,13 @@ func TestHttpRegister(t *testing.T) {
 	})
 
 	t.Run("it should send a 201 and register the user if the Token is valid", func(t *testing.T) {
-		req := common.PrepareRequest("POST", "/register", UserRegisterDto{
-			PreferredName: "Phyliss Ottó",
-		})
 		token := common.Token{
 			CreatedAt:  time.Now(),
 			Identifier: "phyliss@otto.com",
 		}
-		rawToken, _ := common.SignToken(token, *privateKey)
-		req.Header.Add("Authorization", "Bearer "+base64.StdEncoding.EncodeToString(rawToken))
+		req := common.NewRequestBuilder("POST", "/register").WithPayload(UserRegisterDto{
+			PreferredName: "Phyliss Ottó",
+		}).WithToken(token, *privateKey).Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
@@ -93,7 +90,7 @@ func TestHttpGetUsers(t *testing.T) {
 	t.Run("it should send a 200 with the users", func(t *testing.T) {
 		service.Register("john@doe.com", "John Doe")
 		savedUser, _ := userStore.GetByEmail("john@doe.com")
-		req := common.PrepareRequest("GET", "/", nil)
+		req := common.NewRequestBuilder("GET", "/").Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
@@ -121,7 +118,7 @@ func TestHttpJoin(t *testing.T) {
 	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
 
 	t.Run("it should send a 400 if the group_id is not a uuid", func(t *testing.T) {
-		req := common.PrepareRequest("POST", "/join_group", UserJoinGroupDto{GroupID: "dummy", UserID: uuid.NewString()})
+		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: "dummy", UserID: uuid.NewString()}).Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
@@ -133,7 +130,7 @@ func TestHttpJoin(t *testing.T) {
 	})
 
 	t.Run("it should send a 400 if the user_id is not a uuid", func(t *testing.T) {
-		req := common.PrepareRequest("POST", "/join_group", UserJoinGroupDto{GroupID: uuid.NewString(), UserID: "dummy"})
+		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: uuid.NewString(), UserID: "dummy"}).Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
@@ -149,7 +146,7 @@ func TestHttpJoin(t *testing.T) {
 		groupToJoin := group.New("Group 1", "")
 		userStore.Save(userToJoin)
 		groupStore.Save(groupToJoin)
-		req := common.PrepareRequest("POST", "/join_group", UserJoinGroupDto{GroupID: groupToJoin.GetID().String(), UserID: userToJoin.GetID().String()})
+		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: groupToJoin.GetID().String(), UserID: userToJoin.GetID().String()}).Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)

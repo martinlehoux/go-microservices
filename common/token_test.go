@@ -75,7 +75,7 @@ func TestExtractToken(t *testing.T) {
 	publicKey := privateKey.PublicKey
 
 	t.Run("it should error if there is no Authorization header", func(t *testing.T) {
-		req := PrepareRequest("POST", "/any", nil)
+		req := NewRequestBuilder("POST", "/any").Build()
 
 		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
 		assert.ErrorContains(err, "request has no authorization header")
@@ -83,7 +83,7 @@ func TestExtractToken(t *testing.T) {
 	})
 
 	t.Run("it should error if the header is missformed", func(t *testing.T) {
-		req := PrepareRequest("POST", "/any", nil)
+		req := NewRequestBuilder("POST", "/any").Build()
 		req.Header.Add("Authorization", "Whatever")
 
 		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
@@ -92,7 +92,7 @@ func TestExtractToken(t *testing.T) {
 	})
 
 	t.Run("it should error if the token is invalid", func(t *testing.T) {
-		req := PrepareRequest("POST", "/any", nil)
+		req := NewRequestBuilder("POST", "/any").Build()
 		req.Header.Add("Authorization", "Bearer ABC")
 
 		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
@@ -103,7 +103,7 @@ func TestExtractToken(t *testing.T) {
 	t.Run("it should return the token if it is valid", func(t *testing.T) {
 		token := Token{CreatedAt: time.Now(), Identifier: "test"}
 		blob, _ := SignToken(token, *privateKey)
-		req := PrepareRequest("POST", "/any", nil)
+		req := NewRequestBuilder("POST", "/any").Build()
 		encoded := base64.StdEncoding.EncodeToString(blob)
 		req.Header.Add("Authorization", "Bearer "+encoded)
 
