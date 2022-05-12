@@ -14,6 +14,11 @@ func CreateID() ID {
 	return uuid.New()
 }
 
+func ParseID(id string) (ID, error) {
+	parsedId, err := uuid.Parse(id)
+	return parsedId, err
+}
+
 func PanicOnError(err error) {
 	if err != nil {
 		log.Panicf("unhandled error: %s", err.Error())

@@ -2,12 +2,18 @@ package human_resources
 
 import (
 	"errors"
+	"go-microservices/human_resources/group"
 	"go-microservices/human_resources/user"
 	"log"
 )
 
 type HumanResourcesService struct {
-	userStore user.UserStore
+	userStore  user.UserStore
+	groupStore group.GroupStore
+}
+
+func NewHumanResourcesService(userStore user.UserStore, groupStore group.GroupStore) *HumanResourcesService {
+	return &HumanResourcesService{userStore: userStore, groupStore: groupStore}
 }
 
 func (service *HumanResourcesService) Register(email string, preferredName string) error {
@@ -50,4 +56,34 @@ func (service *HumanResourcesService) GetUsers() ([]user.UserDto, error) {
 	}
 
 	return usersDto, err
+}
+
+func (service *HumanResourcesService) UserJoinGroup(userId user.UserID, groupId group.GroupID) error {
+	var err error
+
+	groupToJoin, err := service.groupStore.Get(groupId)
+	if err != nil {
+		log.Printf("failed to get group %s: %s", groupId, err)
+		return err
+	}
+
+	userToJoin, err := service.userStore.Get(userId)
+	if err != nil {
+		log.Printf("failed to get user %s: %s", userId.String(), err)
+		return err
+	}
+
+	err = groupToJoin.AddMember(userToJoin.GetID())
+	if err != nil {
+		log.Printf("failed to add user %s to group %s: %s", userToJoin.GetID(), groupToJoin.GetID(), err)
+		return err
+	}
+
+	err = service.groupStore.Save(groupToJoin)
+	if err != nil {
+		log.Printf("failed to save group %s: %s", groupToJoin.GetID(), err)
+		return err
+	}
+
+	return nil
 }

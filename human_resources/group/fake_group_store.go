@@ -37,3 +37,7 @@ func (store *FakeGroupStore) FindForUser(userId user.UserID) ([]GroupDto, error)
 	}
 	return groups, nil
 }
+
+func (store *FakeGroupStore) Cleanup() {
+	store.groups = make(map[GroupID]Group)
+}

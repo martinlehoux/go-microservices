@@ -7,11 +7,9 @@ import (
 
 func Bootstrap(rootPath string, publicKey rsa.PublicKey) *HumanResourcesHttpController {
 	userStore := user.NewSqlUserStore()
-	service := HumanResourcesService{
-		userStore: &userStore,
-	}
+	service := NewHumanResourcesService(&userStore, nil)
 	controller := HumanResourcesHttpController{
-		humanResourcesService: &service,
+		humanResourcesService: service,
 		publicKey:             publicKey,
 		rootPath:              rootPath,
 	}
