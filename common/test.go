@@ -2,17 +2,38 @@ package common
 
 import (
 	"bytes"
+	"crypto/rsa"
+	"encoding/base64"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 )
 
-func PrepareRequest(method string, target string, payload interface{}) http.Request {
+type RequestBuilder struct {
+	req http.Request
+}
+
+func NewRequestBuilder(method string, target string) RequestBuilder {
+	req := httptest.NewRequest(method, target, nil)
+	return RequestBuilder{req: *req}
+}
+
+func (builder RequestBuilder) WithPayload(payload interface{}) RequestBuilder {
 	body, err := json.Marshal(payload)
 	PanicOnError(err)
 
-	req := httptest.NewRequest(method, target, bytes.NewReader(body))
+	builder.req.Body = ioutil.NopCloser(bytes.NewReader(body))
+	builder.req.Header.Add("Content-Type", "application/json")
+	return builder
+}
 
-	req.Header.Add("Content-Type", "application/json")
-	return *req
+func (builder RequestBuilder) WithToken(token Token, privateKey rsa.PrivateKey) RequestBuilder {
+	rawToken, _ := SignToken(token, privateKey)
+	builder.req.Header.Add("Authorization", "Bearer "+base64.StdEncoding.EncodeToString(rawToken))
+	return builder
+}
+
+func (builder RequestBuilder) Build() http.Request {
+	return builder.req
 }
