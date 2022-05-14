@@ -26,7 +26,7 @@ func TestParseToken(t *testing.T) {
 
 	t.Run("it should error for an invalid key", func(t *testing.T) {
 		randomKey, _ := rsa.GenerateKey(rand.Reader, 1024)
-		token := Token{CreatedAt: time.Now(), Identifier: "test"}
+		token := NewToken("test")
 		blob, _ := SignToken(token, *randomKey)
 
 		token, err := ParseToken(blob, publicKey)
@@ -36,9 +36,9 @@ func TestParseToken(t *testing.T) {
 	})
 
 	t.Run("it should error for an invalid signature", func(t *testing.T) {
-		signature := make([]byte, 32)
-		rand.Read(signature)
-		token := Token{CreatedAt: time.Now(), Identifier: "test", Signature: signature}
+		token := NewToken("test")
+		token.Signature = make([]byte, 32)
+		rand.Read(token.Signature)
 		blob, _ := token.Bytes()
 
 		token, err := ParseToken(blob, publicKey)
@@ -48,7 +48,7 @@ func TestParseToken(t *testing.T) {
 	})
 
 	t.Run("it should parse correctly a signed token", func(t *testing.T) {
-		token := Token{CreatedAt: time.Now(), Identifier: "test"}
+		token := NewToken("test")
 		blob, _ := SignToken(token, *privateKey)
 
 		parsedToken, err := ParseToken(blob, publicKey)
@@ -59,7 +59,8 @@ func TestParseToken(t *testing.T) {
 	})
 
 	t.Run("it should error for an expired Token", func(t *testing.T) {
-		token := Token{CreatedAt: time.Now().Add(-2 * time.Hour), Identifier: "test"}
+		token := NewToken("test")
+		token.CreatedAt = token.CreatedAt.Add(-2 * time.Hour)
 		blob, _ := SignToken(token, *privateKey)
 
 		token, err := ParseToken(blob, publicKey)
@@ -101,7 +102,7 @@ func TestExtractToken(t *testing.T) {
 	})
 
 	t.Run("it should return the token if it is valid", func(t *testing.T) {
-		token := Token{CreatedAt: time.Now(), Identifier: "test"}
+		token := NewToken("test")
 		blob, _ := SignToken(token, *privateKey)
 		req := NewRequestBuilder("POST", "/any").Build()
 		encoded := base64.StdEncoding.EncodeToString(blob)

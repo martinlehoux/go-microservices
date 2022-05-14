@@ -17,6 +17,14 @@ type HumanResourcesHttpController struct {
 	rootPath              string
 }
 
+func NewHumanResourcesHttpController(humanResourcesService *HumanResourcesService, publicKey rsa.PublicKey, rootPath string) HumanResourcesHttpController {
+	return HumanResourcesHttpController{
+		humanResourcesService: humanResourcesService,
+		publicKey:             publicKey,
+		rootPath:              rootPath,
+	}
+}
+
 func (controller *HumanResourcesHttpController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := strings.TrimPrefix(req.URL.Path, controller.rootPath)
 	if path == "/register" && req.Method == "POST" {

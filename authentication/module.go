@@ -7,13 +7,7 @@ import (
 
 func Bootstrap(rootPath string, privateKey rsa.PrivateKey) *AuthenticationHttpController {
 	accountStore := account.NewSqlAccountStore()
-	authenticationService := AuthenticationService{
-		accountStore: &accountStore,
-		privateKey:   privateKey,
-	}
-	authenticationController := AuthenticationHttpController{
-		authenticationService: &authenticationService,
-		rootPath:              rootPath,
-	}
+	authenticationService := NewAuthenticationService(&accountStore, privateKey)
+	authenticationController := NewAuthenticationHttpController(&authenticationService, rootPath)
 	return &authenticationController
 }

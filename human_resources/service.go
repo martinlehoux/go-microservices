@@ -13,8 +13,8 @@ type HumanResourcesService struct {
 	groupStore group.GroupStore
 }
 
-func NewHumanResourcesService(userStore user.UserStore, groupStore group.GroupStore) *HumanResourcesService {
-	return &HumanResourcesService{userStore: userStore, groupStore: groupStore}
+func NewHumanResourcesService(userStore user.UserStore, groupStore group.GroupStore) HumanResourcesService {
+	return HumanResourcesService{userStore: userStore, groupStore: groupStore}
 }
 
 func (service *HumanResourcesService) Register(ctx context.Context, email string, preferredName string) error {

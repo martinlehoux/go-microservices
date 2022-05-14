@@ -29,7 +29,7 @@ func (store *SqlAccountStore) Save(ctx context.Context, account Account) error {
 }
 
 func (store *SqlAccountStore) LoadForIdentifier(ctx context.Context, identifier string) (Account, error) {
-	var account = Account{}
+	var account Account
 
 	err := store.conn.QueryRow(ctx, "SELECT id, identifier, hashed_password FROM accounts WHERE identifier = $1", identifier).Scan(&account.id, &account.identifier, &account.hashedPassword)
 

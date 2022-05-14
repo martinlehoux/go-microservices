@@ -16,6 +16,13 @@ type AuthenticationService struct {
 	privateKey   rsa.PrivateKey
 }
 
+func NewAuthenticationService(accountStore account.AccountStore, privateKey rsa.PrivateKey) AuthenticationService {
+	return AuthenticationService{
+		accountStore: accountStore,
+		privateKey:   privateKey,
+	}
+}
+
 func (service *AuthenticationService) Authenticate(ctx context.Context, identifier string, password string) ([]byte, error) {
 	log.Printf("starting authentication for identifier %s", identifier)
 
