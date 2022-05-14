@@ -15,7 +15,7 @@ func NewFakeUserStore() FakeUserStore {
 func (store *FakeUserStore) Get(userId UserID) (User, error) {
 	user, found := store.users[userId]
 	if !found {
-		return user, errors.New("user not found")
+		return user, ErrUserNotFound
 	}
 	return user, nil
 }
@@ -33,7 +33,6 @@ func (store *FakeUserStore) GetMany() ([]User, error) {
 	return users, nil
 }
 
-// Deprecated: Prefer GetByEmail
 func (store *FakeUserStore) EmailExists(email string) (bool, error) {
 	for _, user := range store.users {
 		if user.email == email {

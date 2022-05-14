@@ -2,7 +2,6 @@ package group
 
 import (
 	"context"
-	"errors"
 	"go-microservices/common"
 	"go-microservices/human_resources/user"
 
@@ -26,7 +25,7 @@ func (store *SqlGroupStore) Get(groupId GroupID) (Group, error) {
 	var group Group
 	err := store.conn.QueryRow(context.Background(), "SELECT id, name, description FROM groups WHERE id = $1", groupId).Scan(&group.id, &group.name, &group.description)
 	if err == pgx.ErrNoRows {
-		return group, errors.New("group not found")
+		return group, ErrGroupNotFound
 	}
 	members := make([]Membership, 0)
 	rows, err := store.conn.Query(context.Background(), "SELECT user_id, joined_at FROM groups_memberships WHERE group_id = $1", groupId)
