@@ -103,15 +103,16 @@ func TestGetMany(t *testing.T, userStore TestableUserStore) {
 	t.Run("it should return all the Users", func(t *testing.T) {
 		t.Cleanup(userStore.clear)
 
-		userStore.Save(New(NewUserPayload{PreferredName: "john", Email: "john@travolta.com"}))
-		userStore.Save(New(NewUserPayload{PreferredName: "jane", Email: "jane@roosevelt.com"}))
+		john := New(NewUserPayload{PreferredName: "john", Email: "john@travolta.com"})
+		jane := New(NewUserPayload{PreferredName: "jane", Email: "jane@roosevelt.com"})
+		userStore.Save(john)
+		userStore.Save(jane)
 
 		users, err := userStore.GetMany()
 
-		assert.NoError(err, "the get should succeed")
-		assert.Equal(2, len(users), "there should be two users")
-		assert.Equal("john", users[0].preferredName, "the first user should be john")
-		assert.Equal("jane", users[1].preferredName, "the second user should be jane")
+		assert.NoError(err)
+		assert.Equal(2, len(users))
+		assert.ElementsMatch([]User{john, jane}, users)
 	})
 
 	t.Run("it should return an empty slice if there are no users", func(t *testing.T) {
