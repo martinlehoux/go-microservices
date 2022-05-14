@@ -23,6 +23,13 @@ type Token struct {
 	Signature  []byte    `json:"signature"`
 }
 
+func NewToken(identifier string) Token {
+	return Token{
+		CreatedAt:  time.Now(),
+		Identifier: identifier,
+	}
+}
+
 const TokenDuration = time.Hour
 
 func (token Token) Bytes() ([]byte, error) {

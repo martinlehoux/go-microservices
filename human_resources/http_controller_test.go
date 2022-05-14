@@ -25,7 +25,7 @@ func TestHttpRegister(t *testing.T) {
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
 	service := NewHumanResourcesService(&userStore, &groupStore)
-	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
+	controller := NewHumanResourcesHttpController(&service, *publicKey, "")
 
 	t.Run("it should send a 401 if there is no Token", func(t *testing.T) {
 		req := common.NewRequestBuilder("POST", "/register").WithPayload(UserRegisterDto{
@@ -85,7 +85,7 @@ func TestHttpGetUsers(t *testing.T) {
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
 	service := NewHumanResourcesService(&userStore, nil)
-	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
+	controller := NewHumanResourcesHttpController(&service, *publicKey, "")
 
 	t.Run("it should send a 200 with the users", func(t *testing.T) {
 		service.Register(ctx, "john@doe.com", "John Doe")
@@ -115,7 +115,7 @@ func TestHttpJoin(t *testing.T) {
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
 	service := NewHumanResourcesService(&userStore, &groupStore)
-	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
+	controller := NewHumanResourcesHttpController(&service, *publicKey, "")
 
 	t.Run("it should send a 400 if the group_id is not a uuid", func(t *testing.T) {
 		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: "dummy", UserID: uuid.NewString()}).Build()

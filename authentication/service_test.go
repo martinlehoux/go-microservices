@@ -17,7 +17,7 @@ var ctx = context.Background()
 func testModule() *AuthenticationService {
 	accountStore := account.NewFakeAccountStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
-	service := AuthenticationService{accountStore: &accountStore, privateKey: *privateKey}
+	service := NewAuthenticationService(&accountStore, *privateKey)
 	return &service
 }
 

@@ -10,10 +10,6 @@ func Bootstrap(rootPath string, publicKey rsa.PublicKey) *HumanResourcesHttpCont
 	userStore := user.NewSqlUserStore()
 	groupStore := group.NewMongoGroupStore()
 	service := NewHumanResourcesService(&userStore, &groupStore)
-	controller := HumanResourcesHttpController{
-		humanResourcesService: service,
-		publicKey:             publicKey,
-		rootPath:              rootPath,
-	}
+	controller := NewHumanResourcesHttpController(&service, publicKey, rootPath)
 	return &controller
 }

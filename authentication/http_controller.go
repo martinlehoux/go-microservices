@@ -12,6 +12,13 @@ type AuthenticationHttpController struct {
 	rootPath              string
 }
 
+func NewAuthenticationHttpController(authenticationService *AuthenticationService, rootPath string) AuthenticationHttpController {
+	return AuthenticationHttpController{
+		authenticationService: authenticationService,
+		rootPath:              rootPath,
+	}
+}
+
 func (controller *AuthenticationHttpController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := strings.TrimPrefix(req.URL.Path, controller.rootPath)
 	if path == "/register" && req.Method == "POST" {
