@@ -3,10 +3,11 @@ package human_resources
 import (
 	"crypto/rsa"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"go-microservices/common"
 	"go-microservices/human_resources/group"
 	"go-microservices/human_resources/user"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -34,7 +35,7 @@ func (controller *HumanResourcesHttpController) ServeHTTP(w http.ResponseWriter,
 	} else if path == "/join_group" && req.Method == "POST" {
 		controller.JoinGroup(w, req)
 	} else {
-		common.WriteError(w, http.StatusNotFound, errors.New("not found"))
+		common.WriteError(w, http.StatusNotFound, common.ErrURLNotFound)
 	}
 }
 
@@ -81,31 +82,40 @@ type UserJoinGroupDto struct {
 	UserID  string `json:"user_id"`
 }
 
-func (controller *HumanResourcesHttpController) JoinGroup(w http.ResponseWriter, req *http.Request) {
+func validateUserJoinGroupDto(input io.Reader) (user.UserID, group.GroupID, []error) {
+	var errs []error
 	payload := new(UserJoinGroupDto)
-	err := json.NewDecoder(req.Body).Decode(payload)
+	err := json.NewDecoder(input).Decode(payload)
 	if err != nil {
-		common.WriteError(w, http.StatusBadRequest, err)
-		return
+		errs = append(errs, fmt.Errorf("failed to parse input: %s", err.Error()))
+		return user.UserID{}, group.GroupID{}, errs
 	}
 
 	id, err := common.ParseID(payload.GroupID)
 	if err != nil {
-		common.WriteError(w, http.StatusBadRequest, errors.New("invalid group id"))
-		return
+		errs = append(errs, fmt.Errorf("invalid group id: %s", err.Error()))
 	}
 	groupId := group.GroupID{id}
 
 	id, err = common.ParseID(payload.UserID)
 	if err != nil {
-		common.WriteError(w, http.StatusBadRequest, errors.New("invalid user id"))
-		return
+		errs = append(errs, fmt.Errorf("invalid user id: %s", err.Error()))
 	}
 	userId := user.UserID{id}
 
-	err = controller.humanResourcesService.UserJoinGroup(req.Context(), userId, groupId)
+	return userId, groupId, errs
+}
+
+func (controller *HumanResourcesHttpController) JoinGroup(w http.ResponseWriter, req *http.Request) {
+	userId, groupId, errs := validateUserJoinGroupDto(req.Body)
+	if len(errs) > 0 {
+		common.WriteErrors(w, http.StatusBadRequest, errs)
+		return
+	}
+
+	err := controller.humanResourcesService.UserJoinGroup(req.Context(), userId, groupId)
 	if err != nil {
-		common.WriteError(w, http.StatusUnprocessableEntity, err)
+		common.WriteErrors(w, http.StatusUnprocessableEntity, []error{err})
 		return
 	}
 

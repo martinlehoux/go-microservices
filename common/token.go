@@ -23,6 +23,13 @@ type Token struct {
 	Signature  []byte    `json:"signature"`
 }
 
+var (
+	ErrTokenEncoding              = errors.New("token encoding failed")
+	ErrTokenExpired               = errors.New("token is expired")
+	ErrMissingAuthorizationHeader = errors.New("request has no authorization header")
+	ErrInvalidAuthorizationHeader = errors.New("request has invalid authorization header")
+)
+
 func NewToken(identifier string) Token {
 	return Token{
 		CreatedAt:  time.Now(),
@@ -36,7 +43,7 @@ func (token Token) Bytes() ([]byte, error) {
 	encodedBytes := new(bytes.Buffer)
 	err := json.NewEncoder(encodedBytes).Encode(token)
 	if err != nil {
-		return nil, fmt.Errorf("error encoding token: %s", err.Error())
+		return nil, ErrTokenEncoding
 	}
 	return encodedBytes.Bytes(), nil
 }
@@ -74,7 +81,7 @@ func ParseToken(blob []byte, publicKey rsa.PublicKey) (Token, error) {
 		return Token{}, err
 	}
 	if time.Now().After(token.CreatedAt.Add(TokenDuration)) {
-		return Token{}, errors.New("token is expired")
+		return Token{}, ErrTokenExpired
 	}
 	return token, nil
 }
@@ -98,12 +105,12 @@ func SignToken(token Token, privateKey rsa.PrivateKey) ([]byte, error) {
 func ExtractToken(authorization string, publicKey rsa.PublicKey) (Token, error) {
 	// authorization := req.Header.Get("Authorization")
 	if authorization == "" {
-		return Token{}, errors.New("request has no authorization header")
+		return Token{}, ErrMissingAuthorizationHeader
 	}
 
 	bearer := strings.Split(authorization, " ")
 	if len(bearer) != 2 || bearer[0] != "Bearer" {
-		return Token{}, errors.New("request has invalid authorization header")
+		return Token{}, ErrInvalidAuthorizationHeader
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(bearer[1])

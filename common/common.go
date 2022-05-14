@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -32,13 +33,28 @@ func WriteResponse(w http.ResponseWriter, code int, data interface{}) {
 	PanicOnError(err)
 }
 
+// Depracated: use WriteErrors instead
 func WriteError(w http.ResponseWriter, code int, err error) {
 	log.Printf("error: %s", err.Error())
 	WriteResponse(w, code, ErrorDto{Error: err.Error()})
 }
 
+func WriteErrors(w http.ResponseWriter, code int, errors []error) {
+	log.Printf("errors: %s", errors)
+	var dto ErrorsDto
+	for _, err := range errors {
+		dto.Errors = append(dto.Errors, err.Error())
+	}
+	WriteResponse(w, code, dto)
+}
+
+// Depracated: use ErrorsDto instead
 type ErrorDto struct {
 	Error string `json:"error"`
+}
+
+type ErrorsDto struct {
+	Errors []string `json:"errors"`
 }
 
 type OperationDto struct {
@@ -46,3 +62,5 @@ type OperationDto struct {
 }
 
 type AnyDto map[string]interface{}
+
+var ErrURLNotFound = errors.New("url not found")

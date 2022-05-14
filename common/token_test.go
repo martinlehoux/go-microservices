@@ -65,7 +65,7 @@ func TestParseToken(t *testing.T) {
 
 		token, err := ParseToken(blob, publicKey)
 
-		assert.ErrorContains(err, "token is expired", "the error should be returned")
+		assert.ErrorIs(err, ErrTokenExpired)
 		assert.Equal(token, Token{}, "the token should be empty")
 	})
 }
@@ -79,7 +79,7 @@ func TestExtractToken(t *testing.T) {
 		req := NewRequestBuilder("POST", "/any").Build()
 
 		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
-		assert.ErrorContains(err, "request has no authorization header")
+		assert.ErrorIs(err, ErrMissingAuthorizationHeader)
 		assert.Equal(Token{}, token)
 	})
 
@@ -88,7 +88,7 @@ func TestExtractToken(t *testing.T) {
 		req.Header.Add("Authorization", "Whatever")
 
 		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
-		assert.ErrorContains(err, "request has invalid authorization header")
+		assert.ErrorIs(err, ErrInvalidAuthorizationHeader)
 		assert.Equal(Token{}, token)
 	})
 

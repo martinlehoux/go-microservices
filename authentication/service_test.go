@@ -41,7 +41,7 @@ func TestRegister(t *testing.T) {
 
 		err := service.Register(ctx, "identifier", "password")
 
-		assert.ErrorContains(err, "identifier already used", "the registration should fail")
+		assert.ErrorIs(err, ErrIdentifierUsed)
 	})
 }
 
@@ -56,7 +56,7 @@ func TestAuthenticate(t *testing.T) {
 		signature, err := service.Authenticate(ctx, "identifier", "password")
 
 		assert.Nil(signature, "the signature should be empty")
-		assert.ErrorContains(err, "account not found", "the authentication should fail")
+		assert.ErrorIs(err, account.ErrAccountNotFound)
 	})
 
 	t.Run("it should abort if the password does not match", func(t *testing.T) {
@@ -65,7 +65,7 @@ func TestAuthenticate(t *testing.T) {
 		signature, err := service.Authenticate(ctx, "identifier", "wrong password")
 
 		assert.Nil(signature)
-		assert.ErrorContains(err, "password mismatch", "the authentication should fail")
+		assert.ErrorIs(err, ErrWrongPassword)
 	})
 
 	t.Run("it should authenticate and return an encrypted token", func(t *testing.T) {

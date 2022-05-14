@@ -30,7 +30,7 @@ func TestAddMember(t *testing.T) {
 		group.AddMember(userID)
 		err := group.AddMember(userID)
 
-		assert.ErrorContains(err, "user already a member")
+		assert.ErrorIs(err, ErrAlreadyMember)
 		assert.Equal(1, len(group.members))
 	})
 }

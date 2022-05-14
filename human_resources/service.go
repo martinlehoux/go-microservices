@@ -13,6 +13,10 @@ type HumanResourcesService struct {
 	groupStore group.GroupStore
 }
 
+var (
+	ErrEmailUsed = errors.New("email already used")
+)
+
 func NewHumanResourcesService(userStore user.UserStore, groupStore group.GroupStore) HumanResourcesService {
 	return HumanResourcesService{userStore: userStore, groupStore: groupStore}
 }
@@ -21,14 +25,17 @@ func (service *HumanResourcesService) Register(ctx context.Context, email string
 	var err error
 	log.Printf("starting user registration for email %s", email)
 
-	emailUsed, err := service.userStore.EmailExists(ctx, email)
-	if err != nil {
-		log.Printf("failed to check if email %s exists: %s", email, err)
-		return err
-	}
-	if emailUsed {
-		err = errors.New("email already used")
+	_, err = service.userStore.GetByEmail(ctx, email)
+
+	switch err {
+	case nil:
+		err = ErrEmailUsed
 		log.Printf("failed to register user for email %s: %s", email, err)
+		return err
+	case user.ErrUserNotFound:
+		break
+	default:
+		log.Printf("failed to check if email %s exists: %s", email, err)
 		return err
 	}
 

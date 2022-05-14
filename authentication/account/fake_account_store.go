@@ -2,7 +2,6 @@ package account
 
 import (
 	"context"
-	"errors"
 )
 
 type FakeAccountStore struct {
@@ -26,7 +25,7 @@ func (store *FakeAccountStore) GetByIdentifier(ctx context.Context, identifier s
 			return account, nil
 		}
 	}
-	return Account{}, errors.New("account not found")
+	return Account{}, ErrAccountNotFound
 }
 
 func (store *FakeAccountStore) Clear() {

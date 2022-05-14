@@ -21,6 +21,8 @@ type Group struct {
 	members     []Membership
 }
 
+var ErrAlreadyMember = errors.New("user already a member")
+
 func New(name string, description string) Group {
 	return Group{
 		id:          GroupID{common.CreateID()},
@@ -32,7 +34,7 @@ func New(name string, description string) Group {
 
 func (group *Group) AddMember(userID user.UserID) error {
 	if group.IsMember(userID) {
-		return errors.New("user already a member")
+		return ErrAlreadyMember
 	}
 	group.members = append(group.members, Membership{
 		userID:   userID,
