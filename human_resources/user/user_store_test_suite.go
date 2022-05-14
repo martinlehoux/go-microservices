@@ -20,7 +20,6 @@ type TestPiece struct {
 func UserStoreTestSuite(t *testing.T, userStore UserStore) {
 	tests := []TestPiece{
 		{title: "SaveAndGet", run: TestSaveAndGet},
-		{title: "EmailExists", run: TestEmailExists},
 		{title: "GetMany", run: TestGetMany},
 		{title: "GetByEmail", run: TestGetByEmail},
 	}
@@ -70,30 +69,6 @@ func TestSaveAndGet(t *testing.T, userStore UserStore) {
 	})
 }
 
-func TestEmailExists(t *testing.T, userStore UserStore) {
-	assert := assert.New(t)
-
-	t.Run("it should return true if the email exists", func(t *testing.T) {
-		t.Cleanup(userStore.Clear)
-
-		userStore.Save(ctx, New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
-
-		exists, err := userStore.EmailExists(ctx, "john@doe.com")
-
-		assert.NoError(err, "the query should not fail")
-		assert.True(exists, "the email should exist")
-	})
-
-	t.Run("it should return false if the email does not exist", func(t *testing.T) {
-		t.Cleanup(userStore.Clear)
-
-		exists, err := userStore.EmailExists(ctx, "john@king.com")
-
-		assert.NoError(err, "the query should not fail")
-		assert.False(exists, "the email should not exist")
-	})
-}
-
 func TestGetMany(t *testing.T, userStore UserStore) {
 	assert := assert.New(t)
 
@@ -134,5 +109,14 @@ func TestGetByEmail(t *testing.T, userStore UserStore) {
 
 		assert.NoError(err, "the get should succeed")
 		assert.Equal("john", user.preferredName, "the user should be john")
+	})
+
+	t.Run("it should return an error if the User is not found", func(t *testing.T) {
+		t.Cleanup(userStore.Clear)
+
+		user, err := userStore.GetByEmail(ctx, "john@doe.com")
+
+		assert.ErrorIs(err, ErrUserNotFound)
+		assert.Equal(User{}, user, "the user should be empty")
 	})
 }

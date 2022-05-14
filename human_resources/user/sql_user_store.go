@@ -34,12 +34,6 @@ func (store *SqlUserStore) Get(ctx context.Context, userId UserID) (User, error)
 	return user, convertPgxError(err)
 }
 
-func (store *SqlUserStore) EmailExists(ctx context.Context, email string) (bool, error) {
-	var count int
-	err := store.conn.QueryRow(ctx, "SELECT count(*) FROM users WHERE email = $1", email).Scan(&count)
-	return count > 0, err
-}
-
 func (store *SqlUserStore) GetMany(ctx context.Context) ([]User, error) {
 	users := make([]User, 0)
 	rows, err := store.conn.Query(ctx, "SELECT id, preferred_name, email FROM users")
@@ -61,7 +55,7 @@ func (store *SqlUserStore) GetMany(ctx context.Context) ([]User, error) {
 func (store *SqlUserStore) GetByEmail(ctx context.Context, email string) (User, error) {
 	var user User
 	err := store.conn.QueryRow(ctx, "SELECT id, preferred_name, email FROM users WHERE email = $1", email).Scan(&user.id, &user.preferredName, &user.email)
-	return user, err
+	return user, convertPgxError(err)
 }
 
 func convertPgxError(err error) error {

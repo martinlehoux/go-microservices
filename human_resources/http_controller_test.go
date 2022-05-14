@@ -124,9 +124,9 @@ func TestHttpJoin(t *testing.T) {
 		controller.ServeHTTP(rr, &req)
 
 		assert.Equal(http.StatusBadRequest, rr.Code)
-		var payload common.ErrorDto
+		var payload common.ErrorsDto
 		json.NewDecoder(rr.Body).Decode(&payload)
-		assert.Equal("invalid group id", payload.Error)
+		assert.Equal([]string{"invalid group id: invalid UUID length: 5"}, payload.Errors)
 	})
 
 	t.Run("it should send a 400 if the user_id is not a uuid", func(t *testing.T) {
@@ -136,9 +136,9 @@ func TestHttpJoin(t *testing.T) {
 		controller.ServeHTTP(rr, &req)
 
 		assert.Equal(http.StatusBadRequest, rr.Code)
-		var payload common.ErrorDto
+		var payload common.ErrorsDto
 		json.NewDecoder(rr.Body).Decode(&payload)
-		assert.Equal("invalid user id", payload.Error)
+		assert.Equal([]string{"invalid user id: invalid UUID length: 5"}, payload.Errors)
 	})
 
 	t.Run("it should send a 201 and make the user join", func(t *testing.T) {

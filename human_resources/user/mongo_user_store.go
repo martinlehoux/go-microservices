@@ -58,7 +58,7 @@ func (store *MongoUserStore) GetByEmail(ctx context.Context, email string) (User
 	var document UserDocument
 	err := store.collection.FindOne(ctx, bson.D{{"email", email}}).Decode(&document)
 	if err != nil {
-		return User{}, err
+		return User{}, convertMongoError(err)
 	}
 	return parseMongoUserDocument(document)
 }
@@ -86,14 +86,6 @@ func (store *MongoUserStore) GetMany(ctx context.Context) ([]User, error) {
 	}
 
 	return users, nil
-}
-
-func (store *MongoUserStore) EmailExists(ctx context.Context, email string) (bool, error) {
-	docs, err := store.collection.CountDocuments(ctx, bson.D{{"email", email}})
-	if err != nil {
-		return false, err
-	}
-	return docs > 0, nil
 }
 
 func parseMongoUserDocument(document UserDocument) (User, error) {

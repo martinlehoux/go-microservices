@@ -53,7 +53,7 @@ func TestGetByIdentifier(t *testing.T) {
 		account, err := store.GetByIdentifier(ctx, "wrong")
 
 		assert.Equal(account, Account{}, "the account should be empty")
-		assert.ErrorContains(err, "no rows in result set", "the error should be returned")
+		assert.ErrorIs(err, ErrAccountNotFound)
 	})
 
 	t.Run("it should get an Account with the correct identifier", func(t *testing.T) {

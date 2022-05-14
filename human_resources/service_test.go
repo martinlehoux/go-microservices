@@ -37,7 +37,7 @@ func TestRegister(t *testing.T) {
 		service.Register(ctx, "john@doe.com", "John")
 		err := service.Register(ctx, "john@doe.com", "John")
 
-		assert.ErrorContains(err, "email already used", "expected Register to error")
+		assert.ErrorIs(err, ErrEmailUsed, "expected Register to error")
 	})
 }
 
@@ -56,7 +56,7 @@ func TestUserJoinGroup(t *testing.T) {
 
 		err := service.UserJoinGroup(ctx, user.GetID(), group.GroupID{common.CreateID()})
 
-		assert.ErrorContains(err, "group not found", "expected UserJoinGroup to error")
+		assert.ErrorIs(err, group.ErrGroupNotFound, "expected UserJoinGroup to error")
 	})
 
 	t.Run("it should fail to join a group if the user does not exist", func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestUserJoinGroup(t *testing.T) {
 
 		err := service.UserJoinGroup(ctx, user.UserID{common.CreateID()}, groupToJoin.GetID())
 
-		assert.ErrorContains(err, "user not found", "expected UserJoinGroup to error")
+		assert.ErrorIs(err, user.ErrUserNotFound, "expected UserJoinGroup to error")
 	})
 
 	t.Run("it should make the user join the group", func(t *testing.T) {

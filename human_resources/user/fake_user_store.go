@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 )
 
 type FakeUserStore struct {
@@ -36,22 +35,13 @@ func (store *FakeUserStore) GetMany(ctx context.Context) ([]User, error) {
 	return users, nil
 }
 
-func (store *FakeUserStore) EmailExists(ctx context.Context, email string) (bool, error) {
-	for _, user := range store.users {
-		if user.email == email {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 func (store *FakeUserStore) GetByEmail(ctx context.Context, email string) (User, error) {
 	for _, user := range store.users {
 		if user.email == email {
 			return user, nil
 		}
 	}
-	return User{}, errors.New("user not found")
+	return User{}, ErrUserNotFound
 }
 
 func (store *FakeUserStore) Clear() {

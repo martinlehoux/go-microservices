@@ -16,6 +16,12 @@ type AuthenticationService struct {
 	privateKey   rsa.PrivateKey
 }
 
+var (
+	ErrWrongPassword       = errors.New("wrong password")
+	ErrTokenSigningFailure = errors.New("token signing failure")
+	ErrIdentifierUsed      = errors.New("identifier already used")
+)
+
 func NewAuthenticationService(accountStore account.AccountStore, privateKey rsa.PrivateKey) AuthenticationService {
 	return AuthenticationService{
 		accountStore: accountStore,
@@ -35,7 +41,7 @@ func (service *AuthenticationService) Authenticate(ctx context.Context, identifi
 	hashedPassword := service.hashPassword(password)
 	if !account.ValidatePassword(hashedPassword) {
 		log.Printf("failed to authenticate account for identifier %s: password mismatch", identifier)
-		return nil, errors.New("password mismatch")
+		return nil, ErrWrongPassword
 	}
 
 	token := account.CreateToken()
@@ -43,7 +49,7 @@ func (service *AuthenticationService) Authenticate(ctx context.Context, identifi
 	signedToken, err := common.SignToken(token, service.privateKey)
 	if err != nil {
 		log.Printf("failed to sign token for identifier %s: %s", identifier, err)
-		return nil, errors.New("failed to sign token")
+		return nil, ErrTokenSigningFailure
 	}
 
 	return signedToken, nil
@@ -84,7 +90,7 @@ func (service *AuthenticationService) ensureIdentifierNotUsed(ctx context.Contex
 	_, err = service.accountStore.GetByIdentifier(ctx, identifier)
 
 	if err == nil {
-		return errors.New("identifier already used")
+		return ErrIdentifierUsed
 	}
 
 	log.Printf("successfully ensured identifier %s is not used", identifier)
