@@ -32,7 +32,7 @@ func TestRegister(t *testing.T) {
 		err := service.Register(ctx, "identifier", "password")
 
 		assert.NoError(err, "the registration should succeed")
-		_, err = service.accountStore.LoadForIdentifier(ctx, "identifier")
+		_, err = service.accountStore.GetByIdentifier(ctx, "identifier")
 		assert.NoError(err, "the account should be saved")
 	})
 

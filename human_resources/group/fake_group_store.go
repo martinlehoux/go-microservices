@@ -28,7 +28,7 @@ func (store *FakeGroupStore) Save(ctx context.Context, group Group) error {
 	return nil
 }
 
-func (store *FakeGroupStore) FindForUser(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
+func (store *FakeGroupStore) FindByMemberUserId(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
 	groups := make([]GroupDto, 0)
 	for _, group := range store.groups {
 		if group.IsMember(userId) {

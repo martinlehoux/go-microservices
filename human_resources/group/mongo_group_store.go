@@ -61,7 +61,7 @@ func (store *MongoGroupStore) Get(ctx context.Context, groupId GroupID) (Group, 
 }
 
 // TODO: Missing performance (index?)
-func (store *MongoGroupStore) FindForUser(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
+func (store *MongoGroupStore) FindByMemberUserId(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
 	pipeline := mongo.Pipeline{
 		bson.D{{"$match", bson.D{
 			{"members", bson.D{{"$elemMatch", bson.D{{"user_id", userId.String()}}}}},

@@ -65,7 +65,7 @@ func (store *SqlGroupStore) Save(ctx context.Context, group Group) error {
 	return err
 }
 
-func (store *SqlGroupStore) FindForUser(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
+func (store *SqlGroupStore) FindByMemberUserId(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
 	groups := make([]GroupDto, 0)
 	rows, err := store.conn.Query(ctx, "SELECT id, name, description, count(*) as members_count FROM groups JOIN groups_memberships ON groups.id = groups_memberships.group_id WHERE id IN (SELECT group_id FROM groups_memberships WHERE user_id = $1) GROUP BY groups.id, groups.name, groups.description", userId)
 	if err != nil {

@@ -12,5 +12,5 @@ type GroupStore interface {
 	Clear()
 	Get(ctx context.Context, groupId GroupID) (Group, error)
 	Save(ctx context.Context, group Group) error
-	FindForUser(ctx context.Context, userId user.UserID) ([]GroupDto, error)
+	FindByMemberUserId(ctx context.Context, userId user.UserID) ([]GroupDto, error)
 }

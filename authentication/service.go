@@ -26,7 +26,7 @@ func NewAuthenticationService(accountStore account.AccountStore, privateKey rsa.
 func (service *AuthenticationService) Authenticate(ctx context.Context, identifier string, password string) ([]byte, error) {
 	log.Printf("starting authentication for identifier %s", identifier)
 
-	account, err := service.accountStore.LoadForIdentifier(ctx, identifier)
+	account, err := service.accountStore.GetByIdentifier(ctx, identifier)
 	if err != nil {
 		log.Printf("failed to find account for identifier %s: %s", identifier, err)
 		return nil, err
@@ -81,7 +81,7 @@ func (service *AuthenticationService) ensureIdentifierNotUsed(ctx context.Contex
 	var err error
 	log.Printf("starting check for unused identifier %s", identifier)
 
-	_, err = service.accountStore.LoadForIdentifier(ctx, identifier)
+	_, err = service.accountStore.GetByIdentifier(ctx, identifier)
 
 	if err == nil {
 		return errors.New("identifier already used")

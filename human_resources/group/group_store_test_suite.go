@@ -21,7 +21,7 @@ type TestPiece struct {
 func GroupStoreTestSuite(t *testing.T, groupStore GroupStore) {
 	tests := []TestPiece{
 		{title: "SaveAndGet", run: TestSaveAndGet},
-		{title: "FindForUser", run: TestFindForUser},
+		{title: "FindByMemberUserId", run: TestFindByMemberUserId},
 	}
 	for _, test := range tests {
 		t.Run(test.title, func(t *testing.T) { test.run(t, groupStore) })
@@ -85,7 +85,7 @@ func TestSaveAndGet(t *testing.T, groupStore GroupStore) {
 	})
 }
 
-func TestFindForUser(t *testing.T, groupStore GroupStore) {
+func TestFindByMemberUserId(t *testing.T, groupStore GroupStore) {
 	assert := assert.New(t)
 
 	t.Run("it should return the groups for the user", func(t *testing.T) {
@@ -100,7 +100,7 @@ func TestFindForUser(t *testing.T, groupStore GroupStore) {
 		group2.AddMember(user.UserID{common.CreateID()})
 		groupStore.Save(ctx, group2)
 
-		groups, err := groupStore.FindForUser(ctx, userID)
+		groups, err := groupStore.FindByMemberUserId(ctx, userID)
 		assert.NoError(err)
 		assert.Equal(2, len(groups))
 		assert.ElementsMatch([]GroupDto{{

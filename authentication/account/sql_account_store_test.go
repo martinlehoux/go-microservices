@@ -25,7 +25,7 @@ func TestSave(t *testing.T) {
 		err := store.Save(ctx, account)
 
 		assert.NoError(err, "the save should succeed")
-		savedAccount, err := store.LoadForIdentifier(ctx, identifier)
+		savedAccount, err := store.GetByIdentifier(ctx, identifier)
 		assert.NoError(err, "the account should be saved")
 		assert.Equal(account, savedAccount, "the account should be saved exactly")
 	})
@@ -40,7 +40,7 @@ func TestSave(t *testing.T) {
 	})
 }
 
-func TestLoadForIdentifier(t *testing.T) {
+func TestGetByIdentifier(t *testing.T) {
 	assert := assert.New(t)
 	store := NewSqlAccountStore()
 
@@ -50,7 +50,7 @@ func TestLoadForIdentifier(t *testing.T) {
 		identifier := common.CreateID().String()
 		store.Save(ctx, NewAccount(identifier, []byte("password")))
 
-		account, err := store.LoadForIdentifier(ctx, "wrong")
+		account, err := store.GetByIdentifier(ctx, "wrong")
 
 		assert.Equal(account, Account{}, "the account should be empty")
 		assert.ErrorContains(err, "no rows in result set", "the error should be returned")
@@ -63,7 +63,7 @@ func TestLoadForIdentifier(t *testing.T) {
 		savedAccount := NewAccount(identifier, []byte("password"))
 		store.Save(ctx, savedAccount)
 
-		account, err := store.LoadForIdentifier(ctx, identifier)
+		account, err := store.GetByIdentifier(ctx, identifier)
 
 		assert.NoError(err, "the load should succeed")
 		assert.Equal(account, savedAccount, "the account should be empty")

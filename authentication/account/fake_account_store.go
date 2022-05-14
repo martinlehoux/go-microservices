@@ -20,7 +20,7 @@ func (store *FakeAccountStore) Save(ctx context.Context, account Account) error 
 	return nil
 }
 
-func (store *FakeAccountStore) LoadForIdentifier(ctx context.Context, identifier string) (Account, error) {
+func (store *FakeAccountStore) GetByIdentifier(ctx context.Context, identifier string) (Account, error) {
 	for _, account := range store.accounts {
 		if account.identifier == identifier {
 			return account, nil
