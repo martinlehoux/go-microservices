@@ -12,16 +12,10 @@ import (
 
 type TestPiece struct {
 	title string
-	run   func(t *testing.T, groupStore TestableGroupStore)
+	run   func(t *testing.T, groupStore GroupStore)
 }
 
-type TestableGroupStore interface {
-	GroupStore
-	// clear the groupStore content
-	clear()
-}
-
-func GroupStoreTestSuite(t *testing.T, groupStore TestableGroupStore) {
+func GroupStoreTestSuite(t *testing.T, groupStore GroupStore) {
 	tests := []TestPiece{
 		{title: "SaveAndGet", run: TestSaveAndGet},
 		{title: "FindForUser", run: TestFindForUser},
@@ -31,11 +25,11 @@ func GroupStoreTestSuite(t *testing.T, groupStore TestableGroupStore) {
 	}
 }
 
-func TestSaveAndGet(t *testing.T, groupStore TestableGroupStore) {
+func TestSaveAndGet(t *testing.T, groupStore GroupStore) {
 	assert := assert.New(t)
 
 	t.Run("it should save the Group", func(t *testing.T) {
-		t.Cleanup(groupStore.clear)
+		t.Cleanup(groupStore.Clear)
 
 		group := New("Name", "Description")
 
@@ -49,7 +43,7 @@ func TestSaveAndGet(t *testing.T, groupStore TestableGroupStore) {
 	})
 
 	t.Run("it should save the latest version of the Group", func(t *testing.T) {
-		t.Cleanup(groupStore.clear)
+		t.Cleanup(groupStore.Clear)
 
 		group := New("Name", "Description")
 		groupStore.Save(group)
@@ -63,7 +57,7 @@ func TestSaveAndGet(t *testing.T, groupStore TestableGroupStore) {
 	})
 
 	t.Run("it should return an error if the Group does not exist", func(t *testing.T) {
-		t.Cleanup(groupStore.clear)
+		t.Cleanup(groupStore.Clear)
 
 		_, err := groupStore.Get(GroupID{common.CreateID()})
 
@@ -71,7 +65,7 @@ func TestSaveAndGet(t *testing.T, groupStore TestableGroupStore) {
 	})
 
 	t.Run("it should save and get group members", func(t *testing.T) {
-		t.Cleanup(groupStore.clear)
+		t.Cleanup(groupStore.Clear)
 
 		group := New("Name", "Description")
 		group.AddMember(user.UserID{common.CreateID()})
@@ -88,11 +82,11 @@ func TestSaveAndGet(t *testing.T, groupStore TestableGroupStore) {
 	})
 }
 
-func TestFindForUser(t *testing.T, groupStore TestableGroupStore) {
+func TestFindForUser(t *testing.T, groupStore GroupStore) {
 	assert := assert.New(t)
 
 	t.Run("it should return the groups for the user", func(t *testing.T) {
-		t.Cleanup(groupStore.clear)
+		t.Cleanup(groupStore.Clear)
 
 		userID := user.UserID{common.CreateID()}
 		group1 := New("Group 1", "Description")

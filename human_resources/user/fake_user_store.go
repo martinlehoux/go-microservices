@@ -51,6 +51,6 @@ func (store *FakeUserStore) GetByEmail(email string) (User, error) {
 	return User{}, errors.New("user not found")
 }
 
-func (store *FakeUserStore) Cleanup() {
+func (store *FakeUserStore) Clear() {
 	store.users = make(map[UserID]User)
 }

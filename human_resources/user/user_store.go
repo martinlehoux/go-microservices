@@ -3,6 +3,7 @@ package user
 import "errors"
 
 type UserStore interface {
+	Clear()
 	Get(userId UserID) (User, error)
 	Save(user User) error
 	GetMany() ([]User, error)

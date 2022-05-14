@@ -114,3 +114,8 @@ func convertMongoError(err error) error {
 	}
 	return err
 }
+
+func (store *MongoUserStore) Clear() {
+	_, err := store.collection.DeleteMany(context.Background(), bson.D{})
+	common.PanicOnError(err)
+}

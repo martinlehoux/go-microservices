@@ -19,8 +19,8 @@ func TestRegister(t *testing.T) {
 
 	t.Run("it should successfully register a non existing email", func(t *testing.T) {
 		t.Cleanup(func() {
-			userStore.Cleanup()
-			groupStore.Cleanup()
+			userStore.Clear()
+			groupStore.Clear()
 		})
 		err := service.Register("john@doe.com", "John")
 
@@ -31,8 +31,8 @@ func TestRegister(t *testing.T) {
 
 	t.Run("it should fail to register an existing email", func(t *testing.T) {
 		t.Cleanup(func() {
-			userStore.Cleanup()
-			groupStore.Cleanup()
+			userStore.Clear()
+			groupStore.Clear()
 		})
 		service.Register("john@doe.com", "John")
 		err := service.Register("john@doe.com", "John")
@@ -49,8 +49,8 @@ func TestUserJoinGroup(t *testing.T) {
 
 	t.Run("it should fail to join a group if the group does not exist", func(t *testing.T) {
 		t.Cleanup(func() {
-			userStore.Cleanup()
-			groupStore.Cleanup()
+			userStore.Clear()
+			groupStore.Clear()
 		})
 		user := user.New(user.NewUserPayload{Email: "test@test.com", PreferredName: "Test"})
 
@@ -61,8 +61,8 @@ func TestUserJoinGroup(t *testing.T) {
 
 	t.Run("it should fail to join a group if the user does not exist", func(t *testing.T) {
 		t.Cleanup(func() {
-			userStore.Cleanup()
-			groupStore.Cleanup()
+			userStore.Clear()
+			groupStore.Clear()
 		})
 		groupToJoin := group.New("Group", "")
 		groupStore.Save(groupToJoin)
@@ -74,8 +74,8 @@ func TestUserJoinGroup(t *testing.T) {
 
 	t.Run("it should make the user join the group", func(t *testing.T) {
 		t.Cleanup(func() {
-			userStore.Cleanup()
-			groupStore.Cleanup()
+			userStore.Clear()
+			groupStore.Clear()
 		})
 		groupToJoin := group.New("Group", "")
 		userToJoin := user.New(user.NewUserPayload{Email: "test@test.com", PreferredName: "Test"})

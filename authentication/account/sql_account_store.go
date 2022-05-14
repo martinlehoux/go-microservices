@@ -35,3 +35,8 @@ func (store *SqlAccountStore) LoadForIdentifier(identifier string) (Account, err
 
 	return account, err
 }
+
+func (store *SqlAccountStore) Clear() {
+	_, err := store.conn.Exec(context.Background(), "DELETE FROM accounts")
+	common.PanicOnError(err)
+}

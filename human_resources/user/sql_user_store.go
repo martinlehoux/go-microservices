@@ -70,3 +70,8 @@ func convertPgxError(err error) error {
 	}
 	return err
 }
+
+func (store *SqlUserStore) Clear() {
+	_, err := store.conn.Exec(context.Background(), "DELETE FROM users")
+	common.PanicOnError(err)
+}
