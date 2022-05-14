@@ -3,6 +3,7 @@
 package user
 
 import (
+	"go-microservices/common"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,6 +61,15 @@ func TestSaveAndGet(t *testing.T, userStore TestableUserStore) {
 		assert.NoError(err, "the save should succeed")
 		savedUser, _ := userStore.Get(user.id)
 		assert.Equal(user, savedUser, "the user should be saved exactly")
+	})
+
+	t.Run("it should return an error if the User is not found", func(t *testing.T) {
+		t.Cleanup(userStore.clear)
+
+		user, err := userStore.Get(UserID{common.CreateID()})
+
+		assert.ErrorIs(ErrUserNotFound, err, "the get should fail")
+		assert.Equal(User{}, user, "the user should be empty")
 	})
 }
 

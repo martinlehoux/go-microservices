@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-microservices/common"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -30,7 +31,7 @@ func (store *SqlUserStore) Save(user User) error {
 func (store *SqlUserStore) Get(userId UserID) (User, error) {
 	var user User
 	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE id = $1", userId).Scan(&user.id, &user.preferredName, &user.email)
-	return user, err
+	return user, convertPgxError(err)
 }
 
 func (store *SqlUserStore) EmailExists(email string) (bool, error) {
@@ -61,4 +62,11 @@ func (store *SqlUserStore) GetByEmail(email string) (User, error) {
 	var user User
 	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE email = $1", email).Scan(&user.id, &user.preferredName, &user.email)
 	return user, err
+}
+
+func convertPgxError(err error) error {
+	if err == pgx.ErrNoRows {
+		return ErrUserNotFound
+	}
+	return err
 }

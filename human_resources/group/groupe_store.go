@@ -1,6 +1,11 @@
 package group
 
-import "go-microservices/human_resources/user"
+import (
+	"errors"
+	"go-microservices/human_resources/user"
+)
+
+var ErrGroupNotFound = errors.New("group not found")
 
 type GroupStore interface {
 	Get(groupId GroupID) (Group, error)

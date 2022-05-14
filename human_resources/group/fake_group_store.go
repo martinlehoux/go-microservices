@@ -1,7 +1,6 @@
 package group
 
 import (
-	"errors"
 	"go-microservices/human_resources/user"
 )
 
@@ -18,7 +17,7 @@ func NewFakeGroupStore() FakeGroupStore {
 func (store *FakeGroupStore) Get(groupId GroupID) (Group, error) {
 	group, found := store.groups[groupId]
 	if !found {
-		return group, errors.New("group not found")
+		return group, ErrGroupNotFound
 	}
 	return group, nil
 }

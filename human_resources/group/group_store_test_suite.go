@@ -67,7 +67,7 @@ func TestSaveAndGet(t *testing.T, groupStore TestableGroupStore) {
 
 		_, err := groupStore.Get(GroupID{common.CreateID()})
 
-		assert.ErrorContains(err, "group not found")
+		assert.ErrorIs(err, ErrGroupNotFound)
 	})
 
 	t.Run("it should save and get group members", func(t *testing.T) {
