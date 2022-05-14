@@ -22,10 +22,10 @@ func TestRegister(t *testing.T) {
 			userStore.Clear()
 			groupStore.Clear()
 		})
-		err := service.Register("john@doe.com", "John")
+		err := service.Register(ctx, "john@doe.com", "John")
 
 		assert.NoError(err, "expected Register to not error")
-		user, _ := userStore.GetByEmail("john@doe.com")
+		user, _ := userStore.GetByEmail(ctx, "john@doe.com")
 		assert.Equal(user.GetEmail(), "john@doe.com", "the email should match")
 	})
 
@@ -34,8 +34,8 @@ func TestRegister(t *testing.T) {
 			userStore.Clear()
 			groupStore.Clear()
 		})
-		service.Register("john@doe.com", "John")
-		err := service.Register("john@doe.com", "John")
+		service.Register(ctx, "john@doe.com", "John")
+		err := service.Register(ctx, "john@doe.com", "John")
 
 		assert.ErrorContains(err, "email already used", "expected Register to error")
 	})
@@ -54,7 +54,7 @@ func TestUserJoinGroup(t *testing.T) {
 		})
 		user := user.New(user.NewUserPayload{Email: "test@test.com", PreferredName: "Test"})
 
-		err := service.UserJoinGroup(user.GetID(), group.GroupID{common.CreateID()})
+		err := service.UserJoinGroup(ctx, user.GetID(), group.GroupID{common.CreateID()})
 
 		assert.ErrorContains(err, "group not found", "expected UserJoinGroup to error")
 	})
@@ -65,9 +65,9 @@ func TestUserJoinGroup(t *testing.T) {
 			groupStore.Clear()
 		})
 		groupToJoin := group.New("Group", "")
-		groupStore.Save(groupToJoin)
+		groupStore.Save(ctx, groupToJoin)
 
-		err := service.UserJoinGroup(user.UserID{common.CreateID()}, groupToJoin.GetID())
+		err := service.UserJoinGroup(ctx, user.UserID{common.CreateID()}, groupToJoin.GetID())
 
 		assert.ErrorContains(err, "user not found", "expected UserJoinGroup to error")
 	})
@@ -79,13 +79,13 @@ func TestUserJoinGroup(t *testing.T) {
 		})
 		groupToJoin := group.New("Group", "")
 		userToJoin := user.New(user.NewUserPayload{Email: "test@test.com", PreferredName: "Test"})
-		userStore.Save(userToJoin)
-		groupStore.Save(groupToJoin)
+		userStore.Save(ctx, userToJoin)
+		groupStore.Save(ctx, groupToJoin)
 
-		err := service.UserJoinGroup(userToJoin.GetID(), groupToJoin.GetID())
+		err := service.UserJoinGroup(ctx, userToJoin.GetID(), groupToJoin.GetID())
 
 		assert.NoError(err, "expected UserJoinGroup to succeed")
-		updatedGroup, _ := groupStore.Get(groupToJoin.GetID())
+		updatedGroup, _ := groupStore.Get(ctx, groupToJoin.GetID())
 		assert.True(updatedGroup.IsMember(userToJoin.GetID()), "expected the user to be a member of the group")
 	})
 }

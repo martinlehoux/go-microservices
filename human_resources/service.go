@@ -1,6 +1,7 @@
 package human_resources
 
 import (
+	"context"
 	"errors"
 	"go-microservices/human_resources/group"
 	"go-microservices/human_resources/user"
@@ -16,11 +17,11 @@ func NewHumanResourcesService(userStore user.UserStore, groupStore group.GroupSt
 	return &HumanResourcesService{userStore: userStore, groupStore: groupStore}
 }
 
-func (service *HumanResourcesService) Register(email string, preferredName string) error {
+func (service *HumanResourcesService) Register(ctx context.Context, email string, preferredName string) error {
 	var err error
 	log.Printf("starting user registration for email %s", email)
 
-	emailUsed, err := service.userStore.EmailExists(email)
+	emailUsed, err := service.userStore.EmailExists(ctx, email)
 	if err != nil {
 		log.Printf("failed to check if email %s exists: %s", email, err)
 		return err
@@ -33,7 +34,7 @@ func (service *HumanResourcesService) Register(email string, preferredName strin
 
 	user := user.New(user.NewUserPayload{Email: email, PreferredName: preferredName})
 
-	err = service.userStore.Save(user)
+	err = service.userStore.Save(ctx, user)
 	if err != nil {
 		log.Printf("failed to save user %s: %s", user.GetID(), err)
 		return err
@@ -44,10 +45,10 @@ func (service *HumanResourcesService) Register(email string, preferredName strin
 	return nil
 }
 
-func (service *HumanResourcesService) GetUsers() ([]user.UserDto, error) {
+func (service *HumanResourcesService) GetUsers(ctx context.Context) ([]user.UserDto, error) {
 	var err error
 
-	users, err := service.userStore.GetMany()
+	users, err := service.userStore.GetMany(ctx)
 
 	usersDto := make([]user.UserDto, 0)
 	for _, u := range users {
@@ -58,16 +59,16 @@ func (service *HumanResourcesService) GetUsers() ([]user.UserDto, error) {
 	return usersDto, err
 }
 
-func (service *HumanResourcesService) UserJoinGroup(userId user.UserID, groupId group.GroupID) error {
+func (service *HumanResourcesService) UserJoinGroup(ctx context.Context, userId user.UserID, groupId group.GroupID) error {
 	var err error
 
-	groupToJoin, err := service.groupStore.Get(groupId)
+	groupToJoin, err := service.groupStore.Get(ctx, groupId)
 	if err != nil {
 		log.Printf("failed to get group %s: %s", groupId, err)
 		return err
 	}
 
-	userToJoin, err := service.userStore.Get(userId)
+	userToJoin, err := service.userStore.Get(ctx, userId)
 	if err != nil {
 		log.Printf("failed to get user %s: %s", userId.String(), err)
 		return err
@@ -79,7 +80,7 @@ func (service *HumanResourcesService) UserJoinGroup(userId user.UserID, groupId 
 		return err
 	}
 
-	err = service.groupStore.Save(groupToJoin)
+	err = service.groupStore.Save(ctx, groupToJoin)
 	if err != nil {
 		log.Printf("failed to save group %s: %s", groupToJoin.GetID(), err)
 		return err

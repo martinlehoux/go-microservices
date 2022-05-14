@@ -3,12 +3,15 @@
 package group
 
 import (
+	"context"
 	"go-microservices/common"
 	"go-microservices/human_resources/user"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var ctx = context.Background()
 
 type TestPiece struct {
 	title string
@@ -33,11 +36,11 @@ func TestSaveAndGet(t *testing.T, groupStore GroupStore) {
 
 		group := New("Name", "Description")
 
-		err := groupStore.Save(group)
+		err := groupStore.Save(ctx, group)
 
 		assert.NoError(err, "the save should succeed")
 
-		savedGroup, err := groupStore.Get(group.id)
+		savedGroup, err := groupStore.Get(ctx, group.id)
 		assert.NoError(err)
 		assert.Equal(group, savedGroup)
 	})
@@ -46,20 +49,20 @@ func TestSaveAndGet(t *testing.T, groupStore GroupStore) {
 		t.Cleanup(groupStore.Clear)
 
 		group := New("Name", "Description")
-		groupStore.Save(group)
+		groupStore.Save(ctx, group)
 		group.Rename("New Name")
 
-		err := groupStore.Save(group)
+		err := groupStore.Save(ctx, group)
 
 		assert.NoError(err, "the save should succeed")
-		savedGroup, _ := groupStore.Get(group.id)
+		savedGroup, _ := groupStore.Get(ctx, group.id)
 		assert.Equal(group, savedGroup, "the group should be saved exactly")
 	})
 
 	t.Run("it should return an error if the Group does not exist", func(t *testing.T) {
 		t.Cleanup(groupStore.Clear)
 
-		_, err := groupStore.Get(GroupID{common.CreateID()})
+		_, err := groupStore.Get(ctx, GroupID{common.CreateID()})
 
 		assert.ErrorIs(err, ErrGroupNotFound)
 	})
@@ -71,11 +74,11 @@ func TestSaveAndGet(t *testing.T, groupStore GroupStore) {
 		group.AddMember(user.UserID{common.CreateID()})
 		group.AddMember(user.UserID{common.CreateID()})
 
-		err := groupStore.Save(group)
+		err := groupStore.Save(ctx, group)
 
 		assert.NoError(err, "the save should succeed")
 
-		savedGroup, err := groupStore.Get(group.id)
+		savedGroup, err := groupStore.Get(ctx, group.id)
 		assert.NoError(err)
 		assert.Equal(2, len(savedGroup.members))
 		assert.Equal(group.members[0].userID, savedGroup.members[0].userID)
@@ -91,13 +94,13 @@ func TestFindForUser(t *testing.T, groupStore GroupStore) {
 		userID := user.UserID{common.CreateID()}
 		group1 := New("Group 1", "Description")
 		group1.AddMember(userID)
-		groupStore.Save(group1)
+		groupStore.Save(ctx, group1)
 		group2 := New("Group 2", "Description")
 		group2.AddMember(userID)
 		group2.AddMember(user.UserID{common.CreateID()})
-		groupStore.Save(group2)
+		groupStore.Save(ctx, group2)
 
-		groups, err := groupStore.FindForUser(userID)
+		groups, err := groupStore.FindForUser(ctx, userID)
 		assert.NoError(err)
 		assert.Equal(2, len(groups))
 		assert.ElementsMatch([]GroupDto{{

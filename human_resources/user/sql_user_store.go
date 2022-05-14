@@ -20,29 +20,29 @@ func NewSqlUserStore() SqlUserStore {
 	}
 }
 
-func (store *SqlUserStore) Save(user User) error {
-	_, err := store.conn.Exec(context.Background(), "INSERT INTO users (id, preferred_name, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET preferred_name = EXCLUDED.preferred_name", user.id, user.preferredName, user.email)
+func (store *SqlUserStore) Save(ctx context.Context, user User) error {
+	_, err := store.conn.Exec(ctx, "INSERT INTO users (id, preferred_name, email) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET preferred_name = EXCLUDED.preferred_name", user.id, user.preferredName, user.email)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (store *SqlUserStore) Get(userId UserID) (User, error) {
+func (store *SqlUserStore) Get(ctx context.Context, userId UserID) (User, error) {
 	var user User
-	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE id = $1", userId).Scan(&user.id, &user.preferredName, &user.email)
+	err := store.conn.QueryRow(ctx, "SELECT id, preferred_name, email FROM users WHERE id = $1", userId).Scan(&user.id, &user.preferredName, &user.email)
 	return user, convertPgxError(err)
 }
 
-func (store *SqlUserStore) EmailExists(email string) (bool, error) {
+func (store *SqlUserStore) EmailExists(ctx context.Context, email string) (bool, error) {
 	var count int
-	err := store.conn.QueryRow(context.Background(), "SELECT count(*) FROM users WHERE email = $1", email).Scan(&count)
+	err := store.conn.QueryRow(ctx, "SELECT count(*) FROM users WHERE email = $1", email).Scan(&count)
 	return count > 0, err
 }
 
-func (store *SqlUserStore) GetMany() ([]User, error) {
+func (store *SqlUserStore) GetMany(ctx context.Context) ([]User, error) {
 	users := make([]User, 0)
-	rows, err := store.conn.Query(context.Background(), "SELECT id, preferred_name, email FROM users")
+	rows, err := store.conn.Query(ctx, "SELECT id, preferred_name, email FROM users")
 	if err != nil {
 		return users, err
 	}
@@ -58,9 +58,9 @@ func (store *SqlUserStore) GetMany() ([]User, error) {
 	return users, nil
 }
 
-func (store *SqlUserStore) GetByEmail(email string) (User, error) {
+func (store *SqlUserStore) GetByEmail(ctx context.Context, email string) (User, error) {
 	var user User
-	err := store.conn.QueryRow(context.Background(), "SELECT id, preferred_name, email FROM users WHERE email = $1", email).Scan(&user.id, &user.preferredName, &user.email)
+	err := store.conn.QueryRow(ctx, "SELECT id, preferred_name, email FROM users WHERE email = $1", email).Scan(&user.id, &user.preferredName, &user.email)
 	return user, err
 }
 

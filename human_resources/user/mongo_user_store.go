@@ -33,20 +33,20 @@ func NewMongoUserStore() MongoUserStore {
 	}
 }
 
-func (store *MongoUserStore) Save(user User) error {
+func (store *MongoUserStore) Save(ctx context.Context, user User) error {
 	document := UserDocument{
 		Id:            user.id.String(),
 		PreferredName: user.preferredName,
 		Email:         user.email,
 	}
-	_, err := store.collection.ReplaceOne(context.Background(), bson.D{{"id", user.id.String()}}, document, options.Replace().SetUpsert(true))
+	_, err := store.collection.ReplaceOne(ctx, bson.D{{"id", user.id.String()}}, document, options.Replace().SetUpsert(true))
 	return err
 }
 
 // TODO: Missing index
-func (store *MongoUserStore) Get(userId UserID) (User, error) {
+func (store *MongoUserStore) Get(ctx context.Context, userId UserID) (User, error) {
 	var document UserDocument
-	err := store.collection.FindOne(context.Background(), bson.D{{"id", userId.String()}}).Decode(&document)
+	err := store.collection.FindOne(ctx, bson.D{{"id", userId.String()}}).Decode(&document)
 	if err != nil {
 		return User{}, convertMongoError(err)
 	}
@@ -54,24 +54,24 @@ func (store *MongoUserStore) Get(userId UserID) (User, error) {
 }
 
 // TODO: Missing index
-func (store *MongoUserStore) GetByEmail(email string) (User, error) {
+func (store *MongoUserStore) GetByEmail(ctx context.Context, email string) (User, error) {
 	var document UserDocument
-	err := store.collection.FindOne(context.Background(), bson.D{{"email", email}}).Decode(&document)
+	err := store.collection.FindOne(ctx, bson.D{{"email", email}}).Decode(&document)
 	if err != nil {
 		return User{}, err
 	}
 	return parseMongoUserDocument(document)
 }
 
-func (store *MongoUserStore) GetMany() ([]User, error) {
+func (store *MongoUserStore) GetMany(ctx context.Context) ([]User, error) {
 	var documents []UserDocument
-	cursor, err := store.collection.Find(context.Background(), bson.D{})
+	cursor, err := store.collection.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(ctx)
 
-	err = cursor.All(context.Background(), &documents)
+	err = cursor.All(ctx, &documents)
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +88,8 @@ func (store *MongoUserStore) GetMany() ([]User, error) {
 	return users, nil
 }
 
-func (store *MongoUserStore) EmailExists(email string) (bool, error) {
-	docs, err := store.collection.CountDocuments(context.Background(), bson.D{{"email", email}})
+func (store *MongoUserStore) EmailExists(ctx context.Context, email string) (bool, error) {
+	docs, err := store.collection.CountDocuments(ctx, bson.D{{"email", email}})
 	if err != nil {
 		return false, err
 	}

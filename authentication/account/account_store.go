@@ -1,7 +1,9 @@
 package account
 
+import "context"
+
 type AccountStore interface {
 	Clear()
-	Save(account Account) error
-	LoadForIdentifier(identifier string) (Account, error)
+	Save(ctx context.Context, account Account) error
+	LoadForIdentifier(ctx context.Context, identifier string) (Account, error)
 }

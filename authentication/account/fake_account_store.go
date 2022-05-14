@@ -1,6 +1,7 @@
 package account
 
 import (
+	"context"
 	"errors"
 )
 
@@ -14,12 +15,12 @@ func NewFakeAccountStore() FakeAccountStore {
 	}
 }
 
-func (store *FakeAccountStore) Save(account Account) error {
+func (store *FakeAccountStore) Save(ctx context.Context, account Account) error {
 	store.accounts[account.id] = account
 	return nil
 }
 
-func (store *FakeAccountStore) LoadForIdentifier(identifier string) (Account, error) {
+func (store *FakeAccountStore) LoadForIdentifier(ctx context.Context, identifier string) (Account, error) {
 	for _, account := range store.accounts {
 		if account.identifier == identifier {
 			return account, nil

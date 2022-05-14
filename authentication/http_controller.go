@@ -36,7 +36,7 @@ func (controller *AuthenticationHttpController) Register(w http.ResponseWriter, 
 		return
 	}
 
-	err = controller.authenticationService.Register(form.Identifier, form.Password)
+	err = controller.authenticationService.Register(req.Context(), form.Identifier, form.Password)
 	if err != nil {
 		common.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -60,7 +60,7 @@ func (controller *AuthenticationHttpController) Authenticate(w http.ResponseWrit
 		return
 	}
 
-	token, err := controller.authenticationService.Authenticate(form.Identifier, form.Password)
+	token, err := controller.authenticationService.Authenticate(req.Context(), form.Identifier, form.Password)
 	if err != nil {
 		common.WriteError(w, http.StatusBadRequest, err)
 		return
