@@ -21,14 +21,14 @@ func NewSqlGroupStore() SqlGroupStore {
 	}
 }
 
-func (store *SqlGroupStore) Get(groupId GroupID) (Group, error) {
+func (store *SqlGroupStore) Get(ctx context.Context, groupId GroupID) (Group, error) {
 	var group Group
-	err := store.conn.QueryRow(context.Background(), "SELECT id, name, description FROM groups WHERE id = $1", groupId).Scan(&group.id, &group.name, &group.description)
+	err := store.conn.QueryRow(ctx, "SELECT id, name, description FROM groups WHERE id = $1", groupId).Scan(&group.id, &group.name, &group.description)
 	if err == pgx.ErrNoRows {
 		return group, ErrGroupNotFound
 	}
 	members := make([]Membership, 0)
-	rows, err := store.conn.Query(context.Background(), "SELECT user_id, joined_at FROM groups_memberships WHERE group_id = $1", groupId)
+	rows, err := store.conn.Query(ctx, "SELECT user_id, joined_at FROM groups_memberships WHERE group_id = $1", groupId)
 	if err != nil {
 		return group, err
 	}
@@ -46,28 +46,28 @@ func (store *SqlGroupStore) Get(groupId GroupID) (Group, error) {
 	return group, err
 }
 
-func (store *SqlGroupStore) Save(group Group) error {
-	transaction, err := store.conn.BeginTx(context.Background(), pgx.TxOptions{})
+func (store *SqlGroupStore) Save(ctx context.Context, group Group) error {
+	transaction, err := store.conn.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
-	_, err = transaction.Exec(context.Background(), "INSERT INTO groups (id, name, description) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description", group.id, group.name, group.description)
+	_, err = transaction.Exec(ctx, "INSERT INTO groups (id, name, description) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description", group.id, group.name, group.description)
 	if err != nil {
 		return err
 	}
 	for _, membership := range group.members {
-		_, err := transaction.Exec(context.Background(), "INSERT INTO groups_memberships (group_id, user_id, joined_at) VALUES ($1, $2, $3) ON CONFLICT (group_id, user_id) DO UPDATE SET joined_at = EXCLUDED.joined_at", group.id, membership.userID, membership.joinedAt)
+		_, err := transaction.Exec(ctx, "INSERT INTO groups_memberships (group_id, user_id, joined_at) VALUES ($1, $2, $3) ON CONFLICT (group_id, user_id) DO UPDATE SET joined_at = EXCLUDED.joined_at", group.id, membership.userID, membership.joinedAt)
 		if err != nil {
 			return err
 		}
 	}
-	err = transaction.Commit(context.Background())
+	err = transaction.Commit(ctx)
 	return err
 }
 
-func (store *SqlGroupStore) FindForUser(userId user.UserID) ([]GroupDto, error) {
+func (store *SqlGroupStore) FindForUser(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
 	groups := make([]GroupDto, 0)
-	rows, err := store.conn.Query(context.Background(), "SELECT id, name, description, count(*) as members_count FROM groups JOIN groups_memberships ON groups.id = groups_memberships.group_id WHERE id IN (SELECT group_id FROM groups_memberships WHERE user_id = $1) GROUP BY groups.id, groups.name, groups.description", userId)
+	rows, err := store.conn.Query(ctx, "SELECT id, name, description, count(*) as members_count FROM groups JOIN groups_memberships ON groups.id = groups_memberships.group_id WHERE id IN (SELECT group_id FROM groups_memberships WHERE user_id = $1) GROUP BY groups.id, groups.name, groups.description", userId)
 	if err != nil {
 		return groups, err
 	}

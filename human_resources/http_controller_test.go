@@ -74,7 +74,7 @@ func TestHttpRegister(t *testing.T) {
 		json.NewDecoder(rr.Body).Decode(&payload)
 		assert.True(payload.Success)
 
-		_, err := userStore.GetByEmail("phyliss@otto.com")
+		_, err := userStore.GetByEmail(ctx, "phyliss@otto.com")
 		assert.NoError(err)
 	})
 }
@@ -88,8 +88,8 @@ func TestHttpGetUsers(t *testing.T) {
 	controller := HumanResourcesHttpController{humanResourcesService: service, publicKey: *publicKey, rootPath: ""}
 
 	t.Run("it should send a 200 with the users", func(t *testing.T) {
-		service.Register("john@doe.com", "John Doe")
-		savedUser, _ := userStore.GetByEmail("john@doe.com")
+		service.Register(ctx, "john@doe.com", "John Doe")
+		savedUser, _ := userStore.GetByEmail(ctx, "john@doe.com")
 		req := common.NewRequestBuilder("GET", "/").Build()
 
 		rr := httptest.NewRecorder()
@@ -144,8 +144,8 @@ func TestHttpJoin(t *testing.T) {
 	t.Run("it should send a 201 and make the user join", func(t *testing.T) {
 		userToJoin := user.New(user.NewUserPayload{Email: "john@doe.com", PreferredName: "John Doe"})
 		groupToJoin := group.New("Group 1", "")
-		userStore.Save(userToJoin)
-		groupStore.Save(groupToJoin)
+		userStore.Save(ctx, userToJoin)
+		groupStore.Save(ctx, groupToJoin)
 		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: groupToJoin.GetID().String(), UserID: userToJoin.GetID().String()}).Build()
 
 		rr := httptest.NewRecorder()
@@ -156,7 +156,7 @@ func TestHttpJoin(t *testing.T) {
 		json.NewDecoder(rr.Body).Decode(&payload)
 		assert.True(payload.Success)
 
-		groupUpdated, _ := groupStore.Get(groupToJoin.GetID())
+		groupUpdated, _ := groupStore.Get(ctx, groupToJoin.GetID())
 		assert.True(groupUpdated.IsMember(userToJoin.GetID()))
 	})
 }

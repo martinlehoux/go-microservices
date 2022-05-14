@@ -29,7 +29,7 @@ func NewMongoGroupStore() MongoGroupStore {
 	}
 }
 
-func (store *MongoGroupStore) Save(group Group) error {
+func (store *MongoGroupStore) Save(ctx context.Context, group Group) error {
 	document := GroupDocument{
 		Id:          group.id.String(),
 		Name:        group.name,
@@ -43,14 +43,14 @@ func (store *MongoGroupStore) Save(group Group) error {
 		}
 	}
 
-	_, err := store.collection.ReplaceOne(context.Background(), bson.D{{"id", group.id.String()}}, document, options.Replace().SetUpsert(true))
+	_, err := store.collection.ReplaceOne(ctx, bson.D{{"id", group.id.String()}}, document, options.Replace().SetUpsert(true))
 	return err
 }
 
 // TODO: Missing indexes
-func (store *MongoGroupStore) Get(groupId GroupID) (Group, error) {
+func (store *MongoGroupStore) Get(ctx context.Context, groupId GroupID) (Group, error) {
 	var document GroupDocument
-	err := store.collection.FindOne(context.Background(), bson.D{{"id", groupId.String()}}).Decode(&document)
+	err := store.collection.FindOne(ctx, bson.D{{"id", groupId.String()}}).Decode(&document)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ErrGroupNotFound
@@ -61,7 +61,7 @@ func (store *MongoGroupStore) Get(groupId GroupID) (Group, error) {
 }
 
 // TODO: Missing performance (index?)
-func (store *MongoGroupStore) FindForUser(userId user.UserID) ([]GroupDto, error) {
+func (store *MongoGroupStore) FindForUser(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
 	pipeline := mongo.Pipeline{
 		bson.D{{"$match", bson.D{
 			{"members", bson.D{{"$elemMatch", bson.D{{"user_id", userId.String()}}}}},
@@ -75,13 +75,13 @@ func (store *MongoGroupStore) FindForUser(userId user.UserID) ([]GroupDto, error
 		bson.D{{"$unset", "members"}},
 	}
 	var documents []GroupDto
-	cur, err := store.collection.Aggregate(context.Background(), pipeline)
+	cur, err := store.collection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
 	}
-	defer cur.Close(context.Background())
+	defer cur.Close(ctx)
 
-	err = cur.All(context.Background(), &documents)
+	err = cur.All(ctx, &documents)
 
 	return documents, err
 }

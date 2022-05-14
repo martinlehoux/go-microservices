@@ -3,6 +3,7 @@
 package authentication
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"go-microservices/authentication/account"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+var ctx = context.Background()
 
 func testModule() *AuthenticationService {
 	accountStore := account.NewFakeAccountStore()
@@ -26,17 +29,17 @@ func TestRegister(t *testing.T) {
 	})
 
 	t.Run("it should register an account", func(t *testing.T) {
-		err := service.Register("identifier", "password")
+		err := service.Register(ctx, "identifier", "password")
 
 		assert.NoError(err, "the registration should succeed")
-		_, err = service.accountStore.LoadForIdentifier("identifier")
+		_, err = service.accountStore.LoadForIdentifier(ctx, "identifier")
 		assert.NoError(err, "the account should be saved")
 	})
 
 	t.Run("it should abort if the account already exists", func(t *testing.T) {
-		service.accountStore.Save(account.NewAccount("identifier", []byte("password")))
+		service.accountStore.Save(ctx, account.NewAccount("identifier", []byte("password")))
 
-		err := service.Register("identifier", "password")
+		err := service.Register(ctx, "identifier", "password")
 
 		assert.ErrorContains(err, "identifier already used", "the registration should fail")
 	})
@@ -50,25 +53,25 @@ func TestAuthenticate(t *testing.T) {
 	})
 
 	t.Run("it should abort if identifier does not exist", func(t *testing.T) {
-		signature, err := service.Authenticate("identifier", "password")
+		signature, err := service.Authenticate(ctx, "identifier", "password")
 
 		assert.Nil(signature, "the signature should be empty")
 		assert.ErrorContains(err, "account not found", "the authentication should fail")
 	})
 
 	t.Run("it should abort if the password does not match", func(t *testing.T) {
-		service.Register("identifier", "password")
+		service.Register(ctx, "identifier", "password")
 
-		signature, err := service.Authenticate("identifier", "wrong password")
+		signature, err := service.Authenticate(ctx, "identifier", "wrong password")
 
 		assert.Nil(signature)
 		assert.ErrorContains(err, "password mismatch", "the authentication should fail")
 	})
 
 	t.Run("it should authenticate and return an encrypted token", func(t *testing.T) {
-		service.Register("identifier", "password")
+		service.Register(ctx, "identifier", "password")
 
-		signature, err := service.Authenticate("identifier", "password")
+		signature, err := service.Authenticate(ctx, "identifier", "password")
 
 		assert.NoError(err, "the authentication should succeed")
 		assert.NotEmpty(signature, "the signature should exist")

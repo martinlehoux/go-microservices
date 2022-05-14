@@ -50,7 +50,7 @@ func (controller *HumanResourcesHttpController) Register(w http.ResponseWriter, 
 		return
 	}
 
-	err = controller.humanResourcesService.Register(token.Identifier, payload.PreferredName)
+	err = controller.humanResourcesService.Register(req.Context(), token.Identifier, payload.PreferredName)
 	if err != nil {
 		common.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -60,7 +60,7 @@ func (controller *HumanResourcesHttpController) Register(w http.ResponseWriter, 
 }
 
 func (controller *HumanResourcesHttpController) GetUsers(w http.ResponseWriter, req *http.Request) {
-	users, err := controller.humanResourcesService.GetUsers()
+	users, err := controller.humanResourcesService.GetUsers(req.Context())
 	if err != nil {
 		common.WriteError(w, http.StatusBadRequest, err)
 	}
@@ -95,7 +95,7 @@ func (controller *HumanResourcesHttpController) JoinGroup(w http.ResponseWriter,
 	}
 	userId := user.UserID{id}
 
-	err = controller.humanResourcesService.UserJoinGroup(userId, groupId)
+	err = controller.humanResourcesService.UserJoinGroup(req.Context(), userId, groupId)
 	if err != nil {
 		common.WriteError(w, http.StatusUnprocessableEntity, err)
 		return

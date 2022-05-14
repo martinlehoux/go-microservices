@@ -1,6 +1,9 @@
 package user
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type FakeUserStore struct {
 	users map[UserID]User
@@ -12,7 +15,7 @@ func NewFakeUserStore() FakeUserStore {
 	}
 }
 
-func (store *FakeUserStore) Get(userId UserID) (User, error) {
+func (store *FakeUserStore) Get(ctx context.Context, userId UserID) (User, error) {
 	user, found := store.users[userId]
 	if !found {
 		return user, ErrUserNotFound
@@ -20,12 +23,12 @@ func (store *FakeUserStore) Get(userId UserID) (User, error) {
 	return user, nil
 }
 
-func (store *FakeUserStore) Save(user User) error {
+func (store *FakeUserStore) Save(ctx context.Context, user User) error {
 	store.users[user.id] = user
 	return nil
 }
 
-func (store *FakeUserStore) GetMany() ([]User, error) {
+func (store *FakeUserStore) GetMany(ctx context.Context) ([]User, error) {
 	users := make([]User, 0)
 	for _, user := range store.users {
 		users = append(users, user)
@@ -33,7 +36,7 @@ func (store *FakeUserStore) GetMany() ([]User, error) {
 	return users, nil
 }
 
-func (store *FakeUserStore) EmailExists(email string) (bool, error) {
+func (store *FakeUserStore) EmailExists(ctx context.Context, email string) (bool, error) {
 	for _, user := range store.users {
 		if user.email == email {
 			return true, nil
@@ -42,7 +45,7 @@ func (store *FakeUserStore) EmailExists(email string) (bool, error) {
 	return false, nil
 }
 
-func (store *FakeUserStore) GetByEmail(email string) (User, error) {
+func (store *FakeUserStore) GetByEmail(ctx context.Context, email string) (User, error) {
 	for _, user := range store.users {
 		if user.email == email {
 			return user, nil

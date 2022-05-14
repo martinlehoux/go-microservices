@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	"context"
 	"crypto/rsa"
 	"errors"
 	"go-microservices/authentication/account"
@@ -15,10 +16,10 @@ type AuthenticationService struct {
 	privateKey   rsa.PrivateKey
 }
 
-func (service *AuthenticationService) Authenticate(identifier string, password string) ([]byte, error) {
+func (service *AuthenticationService) Authenticate(ctx context.Context, identifier string, password string) ([]byte, error) {
 	log.Printf("starting authentication for identifier %s", identifier)
 
-	account, err := service.accountStore.LoadForIdentifier(identifier)
+	account, err := service.accountStore.LoadForIdentifier(ctx, identifier)
 	if err != nil {
 		log.Printf("failed to find account for identifier %s: %s", identifier, err)
 		return nil, err
@@ -41,11 +42,11 @@ func (service *AuthenticationService) Authenticate(identifier string, password s
 	return signedToken, nil
 }
 
-func (service *AuthenticationService) Register(identifier string, password string) error {
+func (service *AuthenticationService) Register(ctx context.Context, identifier string, password string) error {
 	var err error
 	log.Printf("starting registration for identifier %s", identifier)
 
-	err = service.ensureIdentifierNotUsed(identifier)
+	err = service.ensureIdentifierNotUsed(ctx, identifier)
 	if err != nil {
 		log.Printf("failed to ensure identifier %s is not used: %s", identifier, err)
 		return err
@@ -55,7 +56,7 @@ func (service *AuthenticationService) Register(identifier string, password strin
 
 	account := account.NewAccount(identifier, hashedPassword)
 
-	err = service.accountStore.Save(account)
+	err = service.accountStore.Save(ctx, account)
 	if err != nil {
 		log.Printf("failed to save account %s: %s", account.GetID(), err)
 		return err
@@ -69,11 +70,11 @@ func (service *AuthenticationService) hashPassword(password string) []byte {
 	return argon2.IDKey([]byte(password), []byte("salt"), 1, 64*1024, 4, 32)
 }
 
-func (service *AuthenticationService) ensureIdentifierNotUsed(identifier string) error {
+func (service *AuthenticationService) ensureIdentifierNotUsed(ctx context.Context, identifier string) error {
 	var err error
 	log.Printf("starting check for unused identifier %s", identifier)
 
-	_, err = service.accountStore.LoadForIdentifier(identifier)
+	_, err = service.accountStore.LoadForIdentifier(ctx, identifier)
 
 	if err == nil {
 		return errors.New("identifier already used")

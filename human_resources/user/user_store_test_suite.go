@@ -3,11 +3,14 @@
 package user
 
 import (
+	"context"
 	"go-microservices/common"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var ctx = context.Background()
 
 type TestPiece struct {
 	title string
@@ -34,11 +37,11 @@ func TestSaveAndGet(t *testing.T, userStore UserStore) {
 
 		user := New(NewUserPayload{PreferredName: "joe", Email: "joe@doe.com"})
 
-		err := userStore.Save(user)
+		err := userStore.Save(ctx, user)
 
 		assert.NoError(err, "the save should succeed")
 
-		user, err = userStore.Get(user.id)
+		user, err = userStore.Get(ctx, user.id)
 		assert.NoError(err, "the get should succeed")
 		assert.Equal("joe", user.preferredName, "the user should be joe")
 	})
@@ -47,20 +50,20 @@ func TestSaveAndGet(t *testing.T, userStore UserStore) {
 		t.Cleanup(userStore.Clear)
 
 		user := New(NewUserPayload{PreferredName: "paul", Email: "paul@doe.com"})
-		userStore.Save(user)
+		userStore.Save(ctx, user)
 		user.Rename("jean paul")
 
-		err := userStore.Save(user)
+		err := userStore.Save(ctx, user)
 
 		assert.NoError(err, "the save should succeed")
-		savedUser, _ := userStore.Get(user.id)
+		savedUser, _ := userStore.Get(ctx, user.id)
 		assert.Equal(user, savedUser, "the user should be saved exactly")
 	})
 
 	t.Run("it should return an error if the User is not found", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		user, err := userStore.Get(UserID{common.CreateID()})
+		user, err := userStore.Get(ctx, UserID{common.CreateID()})
 
 		assert.ErrorIs(ErrUserNotFound, err, "the get should fail")
 		assert.Equal(User{}, user, "the user should be empty")
@@ -73,9 +76,9 @@ func TestEmailExists(t *testing.T, userStore UserStore) {
 	t.Run("it should return true if the email exists", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		userStore.Save(New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
+		userStore.Save(ctx, New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
 
-		exists, err := userStore.EmailExists("john@doe.com")
+		exists, err := userStore.EmailExists(ctx, "john@doe.com")
 
 		assert.NoError(err, "the query should not fail")
 		assert.True(exists, "the email should exist")
@@ -84,7 +87,7 @@ func TestEmailExists(t *testing.T, userStore UserStore) {
 	t.Run("it should return false if the email does not exist", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		exists, err := userStore.EmailExists("john@king.com")
+		exists, err := userStore.EmailExists(ctx, "john@king.com")
 
 		assert.NoError(err, "the query should not fail")
 		assert.False(exists, "the email should not exist")
@@ -99,10 +102,10 @@ func TestGetMany(t *testing.T, userStore UserStore) {
 
 		john := New(NewUserPayload{PreferredName: "john", Email: "john@travolta.com"})
 		jane := New(NewUserPayload{PreferredName: "jane", Email: "jane@roosevelt.com"})
-		userStore.Save(john)
-		userStore.Save(jane)
+		userStore.Save(ctx, john)
+		userStore.Save(ctx, jane)
 
-		users, err := userStore.GetMany()
+		users, err := userStore.GetMany(ctx)
 
 		assert.NoError(err)
 		assert.Equal(2, len(users))
@@ -112,7 +115,7 @@ func TestGetMany(t *testing.T, userStore UserStore) {
 	t.Run("it should return an empty slice if there are no users", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		users, err := userStore.GetMany()
+		users, err := userStore.GetMany(ctx)
 
 		assert.NoError(err, "the get should succeed")
 		assert.Equal(make([]User, 0), users, "there should be no users")
@@ -125,9 +128,9 @@ func TestGetByEmail(t *testing.T, userStore UserStore) {
 	t.Run("it should return the User", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		userStore.Save(New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
+		userStore.Save(ctx, New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
 
-		user, err := userStore.GetByEmail("john@doe.com")
+		user, err := userStore.GetByEmail(ctx, "john@doe.com")
 
 		assert.NoError(err, "the get should succeed")
 		assert.Equal("john", user.preferredName, "the user should be john")

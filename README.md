@@ -18,3 +18,4 @@
 
 - A store manages persitence for aggregates
 - It can be cleared using `store.Clear()`
+- All methods should accept a `ctx context.Context` to handle context closure

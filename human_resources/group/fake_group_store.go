@@ -1,6 +1,7 @@
 package group
 
 import (
+	"context"
 	"go-microservices/human_resources/user"
 )
 
@@ -14,7 +15,7 @@ func NewFakeGroupStore() FakeGroupStore {
 	}
 }
 
-func (store *FakeGroupStore) Get(groupId GroupID) (Group, error) {
+func (store *FakeGroupStore) Get(ctx context.Context, groupId GroupID) (Group, error) {
 	group, found := store.groups[groupId]
 	if !found {
 		return group, ErrGroupNotFound
@@ -22,12 +23,12 @@ func (store *FakeGroupStore) Get(groupId GroupID) (Group, error) {
 	return group, nil
 }
 
-func (store *FakeGroupStore) Save(group Group) error {
+func (store *FakeGroupStore) Save(ctx context.Context, group Group) error {
 	store.groups[group.id] = group
 	return nil
 }
 
-func (store *FakeGroupStore) FindForUser(userId user.UserID) ([]GroupDto, error) {
+func (store *FakeGroupStore) FindForUser(ctx context.Context, userId user.UserID) ([]GroupDto, error) {
 	groups := make([]GroupDto, 0)
 	for _, group := range store.groups {
 		if group.IsMember(userId) {
