@@ -27,3 +27,7 @@ func (store *FakeAccountStore) LoadForIdentifier(identifier string) (Account, er
 	}
 	return Account{}, errors.New("account not found")
 }
+
+func (store *FakeAccountStore) Clear() {
+	store.accounts = make(map[AccountID]Account)
+}

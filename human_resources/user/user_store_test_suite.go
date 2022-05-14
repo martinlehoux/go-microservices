@@ -11,16 +11,10 @@ import (
 
 type TestPiece struct {
 	title string
-	run   func(t *testing.T, userStore TestableUserStore)
+	run   func(t *testing.T, userStore UserStore)
 }
 
-type TestableUserStore interface {
-	UserStore
-	// clear the userStore content
-	clear()
-}
-
-func UserStoreTestSuite(t *testing.T, userStore TestableUserStore) {
+func UserStoreTestSuite(t *testing.T, userStore UserStore) {
 	tests := []TestPiece{
 		{title: "SaveAndGet", run: TestSaveAndGet},
 		{title: "EmailExists", run: TestEmailExists},
@@ -32,11 +26,11 @@ func UserStoreTestSuite(t *testing.T, userStore TestableUserStore) {
 	}
 }
 
-func TestSaveAndGet(t *testing.T, userStore TestableUserStore) {
+func TestSaveAndGet(t *testing.T, userStore UserStore) {
 	assert := assert.New(t)
 
 	t.Run("it should save the User", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		user := New(NewUserPayload{PreferredName: "joe", Email: "joe@doe.com"})
 
@@ -50,7 +44,7 @@ func TestSaveAndGet(t *testing.T, userStore TestableUserStore) {
 	})
 
 	t.Run("it should save the latest version of the User", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		user := New(NewUserPayload{PreferredName: "paul", Email: "paul@doe.com"})
 		userStore.Save(user)
@@ -64,7 +58,7 @@ func TestSaveAndGet(t *testing.T, userStore TestableUserStore) {
 	})
 
 	t.Run("it should return an error if the User is not found", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		user, err := userStore.Get(UserID{common.CreateID()})
 
@@ -73,11 +67,11 @@ func TestSaveAndGet(t *testing.T, userStore TestableUserStore) {
 	})
 }
 
-func TestEmailExists(t *testing.T, userStore TestableUserStore) {
+func TestEmailExists(t *testing.T, userStore UserStore) {
 	assert := assert.New(t)
 
 	t.Run("it should return true if the email exists", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		userStore.Save(New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
 
@@ -88,7 +82,7 @@ func TestEmailExists(t *testing.T, userStore TestableUserStore) {
 	})
 
 	t.Run("it should return false if the email does not exist", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		exists, err := userStore.EmailExists("john@king.com")
 
@@ -97,11 +91,11 @@ func TestEmailExists(t *testing.T, userStore TestableUserStore) {
 	})
 }
 
-func TestGetMany(t *testing.T, userStore TestableUserStore) {
+func TestGetMany(t *testing.T, userStore UserStore) {
 	assert := assert.New(t)
 
 	t.Run("it should return all the Users", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		john := New(NewUserPayload{PreferredName: "john", Email: "john@travolta.com"})
 		jane := New(NewUserPayload{PreferredName: "jane", Email: "jane@roosevelt.com"})
@@ -116,7 +110,7 @@ func TestGetMany(t *testing.T, userStore TestableUserStore) {
 	})
 
 	t.Run("it should return an empty slice if there are no users", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		users, err := userStore.GetMany()
 
@@ -125,11 +119,11 @@ func TestGetMany(t *testing.T, userStore TestableUserStore) {
 	})
 }
 
-func TestGetByEmail(t *testing.T, userStore TestableUserStore) {
+func TestGetByEmail(t *testing.T, userStore UserStore) {
 	assert := assert.New(t)
 
 	t.Run("it should return the User", func(t *testing.T) {
-		t.Cleanup(userStore.clear)
+		t.Cleanup(userStore.Clear)
 
 		userStore.Save(New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
 

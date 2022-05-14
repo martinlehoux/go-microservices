@@ -3,26 +3,19 @@
 package account
 
 import (
-	"context"
 	"go-microservices/common"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func (store *SqlAccountStore) truncate() error {
-	_, err := store.conn.Exec(context.Background(), "DELETE FROM accounts")
-	return err
-}
-
 func TestSave(t *testing.T) {
 	assert := assert.New(t)
 	store := NewSqlAccountStore()
-	t.Cleanup(func() {
-		store.truncate()
-	})
 
 	t.Run("it should save the Account", func(t *testing.T) {
+		t.Cleanup(store.Clear)
+
 		identifier := common.CreateID().String()
 		account := NewAccount(identifier, []byte("password"))
 
@@ -36,6 +29,8 @@ func TestSave(t *testing.T) {
 
 	t.Run("it should save the latest version of the Account", func(t *testing.T) {
 		t.Skip("there is not update for now")
+		t.Cleanup(store.Clear)
+
 		identifier := common.CreateID().String()
 		account := NewAccount(identifier, []byte("password"))
 		store.Save(account)
@@ -45,11 +40,10 @@ func TestSave(t *testing.T) {
 func TestLoadForIdentifier(t *testing.T) {
 	assert := assert.New(t)
 	store := NewSqlAccountStore()
-	t.Cleanup(func() {
-		store.truncate()
-	})
 
 	t.Run("it should not get an Account with antoher identifier", func(t *testing.T) {
+		t.Cleanup(store.Clear)
+
 		identifier := common.CreateID().String()
 		store.Save(NewAccount(identifier, []byte("password")))
 
@@ -60,6 +54,8 @@ func TestLoadForIdentifier(t *testing.T) {
 	})
 
 	t.Run("it should get an Account with the correct identifier", func(t *testing.T) {
+		t.Cleanup(store.Clear)
+
 		identifier := common.CreateID().String()
 		savedAccount := NewAccount(identifier, []byte("password"))
 		store.Save(savedAccount)

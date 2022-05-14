@@ -8,6 +8,7 @@ import (
 var ErrGroupNotFound = errors.New("group not found")
 
 type GroupStore interface {
+	Clear()
 	Get(groupId GroupID) (Group, error)
 	Save(group Group) error
 	FindForUser(userId user.UserID) ([]GroupDto, error)

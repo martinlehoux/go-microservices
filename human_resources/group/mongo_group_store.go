@@ -129,3 +129,8 @@ func parseMongoMembershipDocument(document MembershipDocument) (Membership, erro
 		joinedAt: document.JoinedAt,
 	}, nil
 }
+
+func (store *MongoGroupStore) Clear() {
+	_, err := store.collection.DeleteMany(context.Background(), bson.D{})
+	common.PanicOnError(err)
+}

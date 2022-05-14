@@ -82,3 +82,10 @@ func (store *SqlGroupStore) FindForUser(userId user.UserID) ([]GroupDto, error) 
 	}
 	return groups, err
 }
+
+func (store *SqlGroupStore) Clear() {
+	_, err := store.conn.Exec(context.Background(), "DELETE FROM groups_memberships")
+	common.PanicOnError(err)
+	_, err = store.conn.Exec(context.Background(), "DELETE FROM groups")
+	common.PanicOnError(err)
+}
