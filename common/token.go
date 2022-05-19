@@ -52,7 +52,6 @@ func LoadPrivateKey(filename string) rsa.PrivateKey {
 	privatePem, err := os.ReadFile(filename)
 	PanicOnError(err)
 	privateBlock, _ := pem.Decode(privatePem)
-	print(privateBlock.Bytes)
 	privateKey, err := x509.ParsePKCS1PrivateKey(privateBlock.Bytes)
 	PanicOnError(err)
 	return *privateKey
