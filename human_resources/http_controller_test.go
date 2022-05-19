@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"fmt"
 	"go-microservices/common"
 	"go-microservices/human_resources/group"
 	"go-microservices/human_resources/user"
@@ -25,10 +26,10 @@ func TestHttpRegister(t *testing.T) {
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
 	service := NewHumanResourcesService(&userStore, &groupStore)
-	controller := NewHumanResourcesHttpController(&service, *publicKey, "")
+	controller := NewHumanResourcesHttpController(&service, *publicKey)
 
 	t.Run("it should send a 401 if there is no Token", func(t *testing.T) {
-		req := common.NewRequestBuilder("POST", "/register").WithPayload(UserRegisterDto{
+		req := common.NewRequestBuilder("POST", "/users/register").WithPayload(UserRegisterDto{
 			PreferredName: "Shaylyn Ognjan",
 		}).Build()
 
@@ -42,7 +43,7 @@ func TestHttpRegister(t *testing.T) {
 	})
 
 	t.Run("it should send a 401 if the Token is wrong", func(t *testing.T) {
-		req := common.NewRequestBuilder("POST", "/register").WithPayload(UserRegisterDto{
+		req := common.NewRequestBuilder("POST", "/users/register").WithPayload(UserRegisterDto{
 			PreferredName: "John Doe",
 		}).Build()
 
@@ -62,7 +63,7 @@ func TestHttpRegister(t *testing.T) {
 			CreatedAt:  time.Now(),
 			Identifier: "phyliss@otto.com",
 		}
-		req := common.NewRequestBuilder("POST", "/register").WithPayload(UserRegisterDto{
+		req := common.NewRequestBuilder("POST", "/users/register").WithPayload(UserRegisterDto{
 			PreferredName: "Phyliss Ottó",
 		}).WithToken(token, *privateKey).Build()
 
@@ -85,12 +86,12 @@ func TestHttpGetUsers(t *testing.T) {
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
 	service := NewHumanResourcesService(&userStore, nil)
-	controller := NewHumanResourcesHttpController(&service, *publicKey, "")
+	controller := NewHumanResourcesHttpController(&service, *publicKey)
 
 	t.Run("it should send a 200 with the users", func(t *testing.T) {
 		service.Register(ctx, "john@doe.com", "John Doe")
 		savedUser, _ := userStore.GetByEmail(ctx, "john@doe.com")
-		req := common.NewRequestBuilder("GET", "/").Build()
+		req := common.NewRequestBuilder("GET", "/users").Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
@@ -115,10 +116,10 @@ func TestHttpJoin(t *testing.T) {
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
 	service := NewHumanResourcesService(&userStore, &groupStore)
-	controller := NewHumanResourcesHttpController(&service, *publicKey, "")
+	controller := NewHumanResourcesHttpController(&service, *publicKey)
 
 	t.Run("it should send a 400 if the group_id is not a uuid", func(t *testing.T) {
-		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: "dummy", UserID: uuid.NewString()}).Build()
+		req := common.NewRequestBuilder("POST", "/groups/dummy/join").WithPayload(UserJoinGroupDto{UserID: uuid.NewString()}).Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
@@ -130,8 +131,7 @@ func TestHttpJoin(t *testing.T) {
 	})
 
 	t.Run("it should send a 400 if the user_id is not a uuid", func(t *testing.T) {
-		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: uuid.NewString(), UserID: "dummy"}).Build()
-
+		req := common.NewRequestBuilder("POST", fmt.Sprintf("/groups/%s/join", uuid.NewString())).WithPayload(UserJoinGroupDto{UserID: "dummy"}).Build()
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)
 
@@ -146,7 +146,7 @@ func TestHttpJoin(t *testing.T) {
 		groupToJoin := group.New("Group 1", "")
 		userStore.Save(ctx, userToJoin)
 		groupStore.Save(ctx, groupToJoin)
-		req := common.NewRequestBuilder("POST", "/join_group").WithPayload(UserJoinGroupDto{GroupID: groupToJoin.GetID().String(), UserID: userToJoin.GetID().String()}).Build()
+		req := common.NewRequestBuilder("POST", fmt.Sprintf("/groups/%s/join", groupToJoin.GetID().String())).WithPayload(UserJoinGroupDto{UserID: userToJoin.GetID().String()}).Build()
 
 		rr := httptest.NewRecorder()
 		controller.ServeHTTP(rr, &req)

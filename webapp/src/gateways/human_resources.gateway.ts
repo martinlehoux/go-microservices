@@ -20,7 +20,7 @@ export class ApiHumanResourcesGateway implements HumanResourcesGateway {
 
   async register(payload: RegisterPayload): Promise<void> {
     this.checkToken(this.token);
-    const url = new URL(`/users/register`, this.apiUrl);
+    const url = new URL(`/hr/users/register`, this.apiUrl);
     const res = await fetch(url.toString(), {
       method: "POST",
       body: JSON.stringify(payload),
@@ -34,7 +34,7 @@ export class ApiHumanResourcesGateway implements HumanResourcesGateway {
   }
 
   async listUsers(): Promise<User[]> {
-    const url = new URL(`/users/`, this.apiUrl);
+    const url = new URL(`/hr/users`, this.apiUrl);
     const res = await fetch(url.toString(), { headers: this.headers });
     const data = await res.json();
     if (!res.ok) {

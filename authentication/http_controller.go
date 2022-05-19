@@ -4,30 +4,25 @@ import (
 	"encoding/json"
 	"go-microservices/common"
 	"net/http"
-	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type AuthenticationHttpController struct {
+	*chi.Mux
 	authenticationService *AuthenticationService
-	rootPath              string
 }
 
-func NewAuthenticationHttpController(authenticationService *AuthenticationService, rootPath string) AuthenticationHttpController {
-	return AuthenticationHttpController{
+func NewAuthenticationHttpController(authenticationService *AuthenticationService) AuthenticationHttpController {
+	controller := AuthenticationHttpController{
+		Mux:                   chi.NewRouter(),
 		authenticationService: authenticationService,
-		rootPath:              rootPath,
 	}
-}
 
-func (controller *AuthenticationHttpController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	common.CommonMiddleware(w, req)
-	path := strings.TrimPrefix(req.URL.Path, controller.rootPath)
-	if path == "/register" && req.Method == "POST" {
-		controller.Register(w, req)
-	}
-	if path == "/authenticate" && req.Method == "POST" {
-		controller.Authenticate(w, req)
-	}
+	controller.Post("/authenticate", controller.Authenticate)
+	controller.Post("/register", controller.Register)
+
+	return controller
 }
 
 type RegisterForm struct {

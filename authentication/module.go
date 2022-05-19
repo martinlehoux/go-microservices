@@ -5,9 +5,9 @@ import (
 	"go-microservices/authentication/account"
 )
 
-func Bootstrap(rootPath string, privateKey rsa.PrivateKey) *AuthenticationHttpController {
+func Bootstrap(privateKey rsa.PrivateKey) *AuthenticationHttpController {
 	accountStore := account.NewSqlAccountStore()
 	authenticationService := NewAuthenticationService(&accountStore, privateKey)
-	authenticationController := NewAuthenticationHttpController(&authenticationService, rootPath)
+	authenticationController := NewAuthenticationHttpController(&authenticationService)
 	return &authenticationController
 }

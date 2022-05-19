@@ -2,7 +2,6 @@ package common
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 
@@ -62,12 +61,14 @@ type OperationDto struct {
 
 type AnyDto map[string]interface{}
 
-var ErrURLNotFound = errors.New("url not found")
+func CommonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+		w.Header().Set("Content-Type", "application/json")
+		log.Printf("[HTTP] %s %s", req.Method, req.URL.Path)
 
-func CommonMiddleware(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
-	w.Header().Set("Content-Type", "application/json")
-	log.Printf("[HTTP] %s %s", req.Method, req.URL.Path)
+		next.ServeHTTP(w, req)
+	})
 }
