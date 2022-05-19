@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go-microservices/authentication"
 	"go-microservices/common"
 	"go-microservices/human_resources"
@@ -21,7 +22,9 @@ func main() {
 	http.Handle("/users/", humanResourcesController)
 	http.Handle("/auth/", authenticationController)
 
-	err := http.ListenAndServe(":3000", nil)
-	log.Fatal(err)
+	const port = 3000
+	log.Printf("listening on http://localhost:%d", port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	log.Fatal(err.Error())
 
 }
