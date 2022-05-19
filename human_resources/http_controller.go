@@ -9,33 +9,28 @@ import (
 	"go-microservices/human_resources/user"
 	"io"
 	"net/http"
-	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type HumanResourcesHttpController struct {
+	*chi.Mux
 	humanResourcesService *HumanResourcesService
 	publicKey             rsa.PublicKey
-	rootPath              string
 }
 
-func NewHumanResourcesHttpController(humanResourcesService *HumanResourcesService, publicKey rsa.PublicKey, rootPath string) HumanResourcesHttpController {
-	return HumanResourcesHttpController{
+func NewHumanResourcesHttpController(humanResourcesService *HumanResourcesService, publicKey rsa.PublicKey) HumanResourcesHttpController {
+	controller := HumanResourcesHttpController{
+		Mux:                   chi.NewRouter(),
 		humanResourcesService: humanResourcesService,
 		publicKey:             publicKey,
-		rootPath:              rootPath,
 	}
-}
 
-func (controller *HumanResourcesHttpController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	common.CommonMiddleware(w, req)
-	path := strings.TrimPrefix(req.URL.Path, controller.rootPath)
-	if path == "/register" && req.Method == "POST" {
-		controller.Register(w, req)
-	} else if path == "/" && req.Method == "GET" {
-		controller.GetUsers(w, req)
-	} else if path == "/join_group" && req.Method == "POST" {
-		controller.JoinGroup(w, req)
-	}
+	controller.Get("/users", controller.GetUsers)
+	controller.Post("/users/register", controller.Register)
+	controller.Post("/groups/{groupId}/join", controller.JoinGroup)
+
+	return controller
 }
 
 type UserRegisterDto struct {
@@ -77,11 +72,10 @@ func (controller *HumanResourcesHttpController) GetUsers(w http.ResponseWriter, 
 }
 
 type UserJoinGroupDto struct {
-	GroupID string `json:"group_id"`
-	UserID  string `json:"user_id"`
+	UserID string `json:"user_id"`
 }
 
-func validateUserJoinGroupDto(input io.Reader) (user.UserID, group.GroupID, []error) {
+func validateUserJoinGroupDto(groupIdParam string, input io.Reader) (user.UserID, group.GroupID, []error) {
 	var errs []error
 	payload := new(UserJoinGroupDto)
 	err := json.NewDecoder(input).Decode(payload)
@@ -90,7 +84,7 @@ func validateUserJoinGroupDto(input io.Reader) (user.UserID, group.GroupID, []er
 		return user.UserID{}, group.GroupID{}, errs
 	}
 
-	id, err := common.ParseID(payload.GroupID)
+	id, err := common.ParseID(groupIdParam)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("invalid group id: %s", err.Error()))
 	}
@@ -106,7 +100,7 @@ func validateUserJoinGroupDto(input io.Reader) (user.UserID, group.GroupID, []er
 }
 
 func (controller *HumanResourcesHttpController) JoinGroup(w http.ResponseWriter, req *http.Request) {
-	userId, groupId, errs := validateUserJoinGroupDto(req.Body)
+	userId, groupId, errs := validateUserJoinGroupDto(chi.URLParam(req, "groupId"), req.Body)
 	if len(errs) > 0 {
 		common.WriteErrors(w, http.StatusBadRequest, errs)
 		return

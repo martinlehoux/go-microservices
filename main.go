@@ -7,20 +7,25 @@ import (
 	"go-microservices/human_resources"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
 	privateKey := common.LoadPrivateKey("id_rsa")
-	authenticationController := authentication.Bootstrap("/auth", privateKey)
-	humanResourcesController := human_resources.Bootstrap("/users", privateKey.PublicKey)
+	authenticationController := authentication.Bootstrap(privateKey)
+	humanResourcesController := human_resources.Bootstrap(privateKey.PublicKey)
 
-	http.HandleFunc("/ping", func(w http.ResponseWriter, req *http.Request) {
-		common.CommonMiddleware(w, req)
+	router := chi.NewRouter()
+
+	router.Use(common.CommonMiddleware)
+
+	router.Get("/ping", func(w http.ResponseWriter, req *http.Request) {
 		common.WriteResponse(w, http.StatusOK, common.AnyDto{"message": "pong"})
 	})
 
-	http.Handle("/users/", humanResourcesController)
-	http.Handle("/auth/", authenticationController)
+	router.Mount("/hr", humanResourcesController)
+	router.Mount("/auth", authenticationController)
 
 	const port = 3000
 	log.Printf("listening on http://localhost:%d", port)

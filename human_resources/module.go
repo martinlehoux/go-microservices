@@ -6,10 +6,10 @@ import (
 	"go-microservices/human_resources/user"
 )
 
-func Bootstrap(rootPath string, publicKey rsa.PublicKey) *HumanResourcesHttpController {
+func Bootstrap(publicKey rsa.PublicKey) *HumanResourcesHttpController {
 	userStore := user.NewSqlUserStore()
 	groupStore := group.NewMongoGroupStore()
 	service := NewHumanResourcesService(&userStore, &groupStore)
-	controller := NewHumanResourcesHttpController(&service, publicKey, rootPath)
+	controller := NewHumanResourcesHttpController(&service, publicKey)
 	return &controller
 }

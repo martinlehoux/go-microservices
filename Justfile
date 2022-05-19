@@ -10,9 +10,6 @@ spec:
 intg:
   go test -tags intg -p 1 ./...
 
-e2e:
-  go test -tags e2e -p 1 ./...
-
 coverage:
   go test -coverprofile=coverage.out -tags="spec intg" ./...
   go tool cover -html=coverage.out
