@@ -20,6 +20,7 @@ func NewAuthenticationHttpController(authenticationService *AuthenticationServic
 }
 
 func (controller *AuthenticationHttpController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	common.CommonMiddleware(w, req)
 	path := strings.TrimPrefix(req.URL.Path, controller.rootPath)
 	if path == "/register" && req.Method == "POST" {
 		controller.Register(w, req)
