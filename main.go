@@ -13,7 +13,8 @@ func main() {
 	authenticationController := authentication.Bootstrap("/auth", privateKey)
 	humanResourcesController := human_resources.Bootstrap("/users", privateKey.PublicKey)
 
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/ping", func(w http.ResponseWriter, req *http.Request) {
+		common.CommonMiddleware(w, req)
 		common.WriteResponse(w, http.StatusOK, common.AnyDto{"message": "pong"})
 	})
 

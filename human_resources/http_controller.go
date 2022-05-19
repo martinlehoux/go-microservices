@@ -27,6 +27,7 @@ func NewHumanResourcesHttpController(humanResourcesService *HumanResourcesServic
 }
 
 func (controller *HumanResourcesHttpController) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	common.CommonMiddleware(w, req)
 	path := strings.TrimPrefix(req.URL.Path, controller.rootPath)
 	if path == "/register" && req.Method == "POST" {
 		controller.Register(w, req)
@@ -34,8 +35,6 @@ func (controller *HumanResourcesHttpController) ServeHTTP(w http.ResponseWriter,
 		controller.GetUsers(w, req)
 	} else if path == "/join_group" && req.Method == "POST" {
 		controller.JoinGroup(w, req)
-	} else {
-		common.WriteError(w, http.StatusNotFound, common.ErrURLNotFound)
 	}
 }
 

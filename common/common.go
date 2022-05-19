@@ -27,7 +27,6 @@ func PanicOnError(err error) {
 }
 
 func WriteResponse(w http.ResponseWriter, code int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	err := json.NewEncoder(w).Encode(data)
 	PanicOnError(err)
@@ -64,3 +63,11 @@ type OperationDto struct {
 type AnyDto map[string]interface{}
 
 var ErrURLNotFound = errors.New("url not found")
+
+func CommonMiddleware(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+	w.Header().Set("Content-Type", "application/json")
+	log.Printf("[HTTP] %s %s", req.Method, req.URL.Path)
+}
