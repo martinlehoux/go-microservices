@@ -78,7 +78,7 @@ func TestExtractToken(t *testing.T) {
 	t.Run("it should error if there is no Authorization header", func(t *testing.T) {
 		req := NewRequestBuilder("POST", "/any").Build()
 
-		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
+		token, err := ExtractToken(req, publicKey)
 		assert.ErrorIs(err, ErrMissingAuthorizationHeader)
 		assert.Equal(Token{}, token)
 	})
@@ -87,7 +87,7 @@ func TestExtractToken(t *testing.T) {
 		req := NewRequestBuilder("POST", "/any").Build()
 		req.Header.Add("Authorization", "Whatever")
 
-		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
+		token, err := ExtractToken(req, publicKey)
 		assert.ErrorIs(err, ErrInvalidAuthorizationHeader)
 		assert.Equal(Token{}, token)
 	})
@@ -96,7 +96,7 @@ func TestExtractToken(t *testing.T) {
 		req := NewRequestBuilder("POST", "/any").Build()
 		req.Header.Add("Authorization", "Bearer ABC")
 
-		token, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
+		token, err := ExtractToken(req, publicKey)
 		assert.ErrorContains(err, "error decoding token")
 		assert.Equal(Token{}, token)
 	})
@@ -108,7 +108,7 @@ func TestExtractToken(t *testing.T) {
 		encoded := base64.StdEncoding.EncodeToString(blob)
 		req.Header.Add("Authorization", "Bearer "+encoded)
 
-		parsedToken, err := ExtractToken(req.Header.Get("Authorization"), publicKey)
+		parsedToken, err := ExtractToken(req, publicKey)
 		assert.NoError(err, "the parsing should be successful")
 		assert.True(token.CreatedAt.Equal(parsedToken.CreatedAt), "the creation date should match")
 		assert.Equal(token.Identifier, parsedToken.Identifier, "the identifier should match")

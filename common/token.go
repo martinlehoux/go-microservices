@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -100,9 +101,8 @@ func SignToken(token Token, privateKey rsa.PrivateKey) ([]byte, error) {
 }
 
 // ExtractToken uses ParseToken on a request headers to auhtenticate a request
-// TODO: After moving to het/http, extract on request instead of header string
-func ExtractToken(authorization string, publicKey rsa.PublicKey) (Token, error) {
-	// authorization := req.Header.Get("Authorization")
+func ExtractToken(req http.Request, publicKey rsa.PublicKey) (Token, error) {
+	authorization := req.Header.Get("Authorization")
 	if authorization == "" {
 		return Token{}, ErrMissingAuthorizationHeader
 	}
