@@ -7,6 +7,7 @@
 - **go.mongodb.org/mongo-driver** for connection to the database MongoDB
 - **golang.org/x/crypto** for password hashing
 - **github.com/golang-migrate/migrate** for managing database migrations
+- **github.com/go-chi/chi** for http routing
 
 ## Dev Dependencies
 
@@ -25,6 +26,7 @@
 - It can be cleared using `store.Clear()`
 - All methods should accept a `ctx context.Context` to handle context closure
 - `GetByXXX` methods return a single result
+
 ### Errors
 
 - An error has a text in lower case
