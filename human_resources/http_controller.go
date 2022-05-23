@@ -40,7 +40,7 @@ type UserRegisterDto struct {
 func (controller *HumanResourcesHttpController) Register(w http.ResponseWriter, req *http.Request) {
 	var err error
 
-	token, err := common.ExtractToken(req.Header.Get("Authorization"), controller.publicKey)
+	token, err := common.ExtractToken(*req, controller.publicKey)
 	if err != nil {
 		common.WriteError(w, http.StatusUnauthorized, err)
 		return
