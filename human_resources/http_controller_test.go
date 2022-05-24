@@ -21,11 +21,12 @@ import (
 
 func TestHttpRegister(t *testing.T) {
 	assert := assert.New(t)
+	logger := common.NewLogrusLogger()
 	userStore := user.NewFakeUserStore()
 	groupStore := group.NewFakeGroupStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
-	service := NewHumanResourcesService(&userStore, &groupStore)
+	service := NewHumanResourcesService(&userStore, &groupStore, &logger)
 	controller := NewHumanResourcesHttpController(&service, *publicKey)
 
 	t.Run("it should send a 401 if there is no Token", func(t *testing.T) {
@@ -82,10 +83,11 @@ func TestHttpRegister(t *testing.T) {
 
 func TestHttpGetUsers(t *testing.T) {
 	assert := assert.New(t)
+	logger := common.NewLogrusLogger()
 	userStore := user.NewFakeUserStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
-	service := NewHumanResourcesService(&userStore, nil)
+	service := NewHumanResourcesService(&userStore, nil, &logger)
 	controller := NewHumanResourcesHttpController(&service, *publicKey)
 
 	t.Run("it should send a 200 with the users", func(t *testing.T) {
@@ -111,11 +113,12 @@ func TestHttpGetUsers(t *testing.T) {
 
 func TestHttpJoin(t *testing.T) {
 	assert := assert.New(t)
+	logger := common.NewLogrusLogger()
 	userStore := user.NewFakeUserStore()
 	groupStore := group.NewFakeGroupStore()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
 	publicKey := &privateKey.PublicKey
-	service := NewHumanResourcesService(&userStore, &groupStore)
+	service := NewHumanResourcesService(&userStore, &groupStore, &logger)
 	controller := NewHumanResourcesHttpController(&service, *publicKey)
 
 	t.Run("it should send a 400 if the group_id is not a uuid", func(t *testing.T) {

@@ -8,6 +8,7 @@
 - **golang.org/x/crypto** for password hashing
 - **github.com/golang-migrate/migrate** for managing database migrations
 - **github.com/go-chi/chi** for http routing
+- **github.com/sirupsen/logrus** for logging
 
 ## Dev Dependencies
 
