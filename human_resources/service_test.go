@@ -13,9 +13,10 @@ import (
 
 func TestRegister(t *testing.T) {
 	assert := assert.New(t)
+	logger := common.NewLogrusLogger()
 	userStore := user.NewFakeUserStore()
 	groupStore := group.NewFakeGroupStore()
-	service := NewHumanResourcesService(&userStore, nil)
+	service := NewHumanResourcesService(&userStore, &groupStore, &logger)
 
 	t.Run("it should successfully register a non existing email", func(t *testing.T) {
 		t.Cleanup(func() {
@@ -43,9 +44,10 @@ func TestRegister(t *testing.T) {
 
 func TestUserJoinGroup(t *testing.T) {
 	assert := assert.New(t)
+	logger := common.NewLogrusLogger()
 	userStore := user.NewFakeUserStore()
 	groupStore := group.NewFakeGroupStore()
-	service := NewHumanResourcesService(&userStore, &groupStore)
+	service := NewHumanResourcesService(&userStore, &groupStore, &logger)
 
 	t.Run("it should fail to join a group if the group does not exist", func(t *testing.T) {
 		t.Cleanup(func() {

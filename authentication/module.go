@@ -3,11 +3,12 @@ package authentication
 import (
 	"crypto/rsa"
 	"go-microservices/authentication/account"
+	"go-microservices/common"
 )
 
-func Bootstrap(privateKey rsa.PrivateKey) *AuthenticationHttpController {
+func Bootstrap(logger common.Logger, privateKey rsa.PrivateKey) *AuthenticationHttpController {
 	accountStore := account.NewSqlAccountStore()
-	authenticationService := NewAuthenticationService(&accountStore, privateKey)
+	authenticationService := NewAuthenticationService(&accountStore, logger, privateKey)
 	authenticationController := NewAuthenticationHttpController(&authenticationService)
 	return &authenticationController
 }

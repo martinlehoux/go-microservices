@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"go-microservices/authentication/account"
+	"go-microservices/common"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,8 +17,9 @@ var ctx = context.Background()
 
 func testModule() *AuthenticationService {
 	accountStore := account.NewFakeAccountStore()
+	logger := common.NewLogrusLogger()
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 1024)
-	service := NewAuthenticationService(&accountStore, *privateKey)
+	service := NewAuthenticationService(&accountStore, &logger, *privateKey)
 	return &service
 }
 

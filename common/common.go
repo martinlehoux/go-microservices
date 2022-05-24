@@ -33,12 +33,10 @@ func WriteResponse(w http.ResponseWriter, code int, data interface{}) {
 
 // Depracated: use WriteErrors instead
 func WriteError(w http.ResponseWriter, code int, err error) {
-	log.Printf("error: %s", err.Error())
 	WriteResponse(w, code, ErrorDto{Error: err.Error()})
 }
 
 func WriteErrors(w http.ResponseWriter, code int, errors []error) {
-	log.Printf("errors: %s", errors)
 	var dto ErrorsDto
 	for _, err := range errors {
 		dto.Errors = append(dto.Errors, err.Error())
@@ -61,14 +59,21 @@ type OperationDto struct {
 
 type AnyDto map[string]interface{}
 
-func CommonMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
-		w.Header().Set("Content-Type", "application/json")
-		log.Printf("[HTTP] %s %s", req.Method, req.URL.Path)
+type Middleware func(http.Handler) http.Handler
 
-		next.ServeHTTP(w, req)
-	})
+func CommonMiddlewareConstructor(logger Logger) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+			w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
+			w.Header().Set("Content-Type", "application/json")
+
+			ctx := logger.Init(req.Context())
+			requestId := uuid.New().String()
+			logger.With(ctx, "requestId", requestId).With(ctx, "method", req.Method).With(ctx, "url", req.URL.String()).Info(ctx, "request started")
+
+			next.ServeHTTP(w, req.WithContext(ctx))
+		})
+	}
 }

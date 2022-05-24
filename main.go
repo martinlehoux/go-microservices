@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"go-microservices/authentication"
 	"go-microservices/common"
@@ -13,12 +14,13 @@ import (
 
 func main() {
 	privateKey := common.LoadPrivateKey("id_rsa")
-	authenticationController := authentication.Bootstrap(privateKey)
-	humanResourcesController := human_resources.Bootstrap(privateKey.PublicKey)
+	logger := common.NewLogrusLogger()
+	authenticationController := authentication.Bootstrap(&logger, privateKey)
+	humanResourcesController := human_resources.Bootstrap(&logger, privateKey.PublicKey)
 
 	router := chi.NewRouter()
 
-	router.Use(common.CommonMiddleware)
+	router.Use(common.CommonMiddlewareConstructor(&logger))
 
 	router.Get("/ping", func(w http.ResponseWriter, req *http.Request) {
 		common.WriteResponse(w, http.StatusOK, common.AnyDto{"message": "pong"})
@@ -28,7 +30,7 @@ func main() {
 	router.Mount("/auth", authenticationController)
 
 	const port = 3000
-	log.Printf("listening on http://localhost:%d", port)
+	logger.Info(context.Background(), "listening on http://localhost:%d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 	log.Fatal(err.Error())
 }

@@ -6,13 +6,13 @@ import (
 	"errors"
 	"go-microservices/authentication/account"
 	"go-microservices/common"
-	"log"
 
 	"golang.org/x/crypto/argon2"
 )
 
 type AuthenticationService struct {
 	accountStore account.AccountStore
+	logger       common.Logger
 	privateKey   rsa.PrivateKey
 }
 
@@ -22,25 +22,28 @@ var (
 	ErrIdentifierUsed      = errors.New("identifier already used")
 )
 
-func NewAuthenticationService(accountStore account.AccountStore, privateKey rsa.PrivateKey) AuthenticationService {
+func NewAuthenticationService(accountStore account.AccountStore, logger common.Logger, privateKey rsa.PrivateKey) AuthenticationService {
 	return AuthenticationService{
 		accountStore: accountStore,
+		logger:       logger,
 		privateKey:   privateKey,
 	}
 }
 
 func (service *AuthenticationService) Authenticate(ctx context.Context, identifier string, password string) ([]byte, error) {
-	log.Printf("starting authentication for identifier %s", identifier)
+	service.logger.With(ctx, "identifier", identifier)
+	service.logger.Info(ctx, "starting authentication for identifier %s", identifier)
 
 	account, err := service.accountStore.GetByIdentifier(ctx, identifier)
 	if err != nil {
-		log.Printf("failed to find account for identifier %s: %s", identifier, err)
+		service.logger.Info(ctx, "failed to find account for identifier %s: %s", identifier, err)
 		return nil, err
 	}
+	service.logger.With(ctx, "accountId", account.GetID().String())
 
 	hashedPassword := service.hashPassword(password)
 	if !account.ValidatePassword(hashedPassword) {
-		log.Printf("failed to authenticate account for identifier %s: password mismatch", identifier)
+		service.logger.Info(ctx, "failed to authenticate account for identifier %s: password mismatch", identifier)
 		return nil, ErrWrongPassword
 	}
 
@@ -48,7 +51,7 @@ func (service *AuthenticationService) Authenticate(ctx context.Context, identifi
 
 	signedToken, err := common.SignToken(token, service.privateKey)
 	if err != nil {
-		log.Printf("failed to sign token for identifier %s: %s", identifier, err)
+		service.logger.Warn(ctx, "failed to sign token for identifier %s: %s", identifier, err)
 		return nil, ErrTokenSigningFailure
 	}
 
@@ -57,25 +60,26 @@ func (service *AuthenticationService) Authenticate(ctx context.Context, identifi
 
 func (service *AuthenticationService) Register(ctx context.Context, identifier string, password string) error {
 	var err error
-	log.Printf("starting registration for identifier %s", identifier)
+	service.logger.Info(ctx, "starting registration for identifier %s", identifier)
 
 	err = service.ensureIdentifierNotUsed(ctx, identifier)
 	if err != nil {
-		log.Printf("failed to ensure identifier %s is not used: %s", identifier, err)
+		service.logger.Info(ctx, "failed to ensure identifier %s is not used: %s", identifier, err)
 		return err
 	}
 
 	hashedPassword := service.hashPassword(password)
 
 	account := account.NewAccount(identifier, hashedPassword)
+	service.logger.With(ctx, "accountId", account.GetID().String())
 
 	err = service.accountStore.Save(ctx, account)
 	if err != nil {
-		log.Printf("failed to save account %s: %s", account.GetID(), err)
+		service.logger.Warn(ctx, "failed to save account %s: %s", account.GetID(), err)
 		return err
 	}
 
-	log.Printf("successfully registered account %s", account.GetID())
+	service.logger.Info(ctx, "successfully registered account %s", account.GetID())
 	return nil
 }
 
@@ -85,7 +89,6 @@ func (service *AuthenticationService) hashPassword(password string) []byte {
 
 func (service *AuthenticationService) ensureIdentifierNotUsed(ctx context.Context, identifier string) error {
 	var err error
-	log.Printf("starting check for unused identifier %s", identifier)
 
 	_, err = service.accountStore.GetByIdentifier(ctx, identifier)
 
@@ -93,6 +96,5 @@ func (service *AuthenticationService) ensureIdentifierNotUsed(ctx context.Contex
 		return ErrIdentifierUsed
 	}
 
-	log.Printf("successfully ensured identifier %s is not used", identifier)
 	return nil
 }
