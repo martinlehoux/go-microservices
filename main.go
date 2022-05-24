@@ -29,7 +29,6 @@ func main() {
 
 	const port = 3000
 	log.Printf("listening on http://localhost:%d", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), router)
 	log.Fatal(err.Error())
-
 }
