@@ -41,7 +41,7 @@ func (service *HumanResourcesService) Register(ctx context.Context, email string
 		return err
 	}
 
-	user := user.New(user.NewUserPayload{Email: email, PreferredName: preferredName})
+	user := user.New(preferredName, email)
 	service.logger.With(ctx, "userId", user.GetID().String())
 
 	err = service.userStore.Save(ctx, user)

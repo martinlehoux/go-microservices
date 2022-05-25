@@ -54,7 +54,7 @@ func TestUserJoinGroup(t *testing.T) {
 			userStore.Clear()
 			groupStore.Clear()
 		})
-		user := user.New(user.NewUserPayload{Email: "test@test.com", PreferredName: "Test"})
+		user := user.New("Test", "test@test.com")
 
 		err := service.UserJoinGroup(ctx, user.GetID(), group.GroupID{common.CreateID()})
 
@@ -80,7 +80,7 @@ func TestUserJoinGroup(t *testing.T) {
 			groupStore.Clear()
 		})
 		groupToJoin := group.New("Group", "")
-		userToJoin := user.New(user.NewUserPayload{Email: "test@test.com", PreferredName: "Test"})
+		userToJoin := user.New("Test", "test@test.com")
 		userStore.Save(ctx, userToJoin)
 		groupStore.Save(ctx, groupToJoin)
 
