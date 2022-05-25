@@ -34,7 +34,7 @@ func TestSaveAndGet(t *testing.T, userStore UserStore) {
 	t.Run("it should save the User", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		user := New(NewUserPayload{PreferredName: "joe", Email: "joe@doe.com"})
+		user := New("joe", "joe@doe.com")
 
 		err := userStore.Save(ctx, user)
 
@@ -48,7 +48,7 @@ func TestSaveAndGet(t *testing.T, userStore UserStore) {
 	t.Run("it should save the latest version of the User", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		user := New(NewUserPayload{PreferredName: "paul", Email: "paul@doe.com"})
+		user := New("paul", "paul@doe.com")
 		userStore.Save(ctx, user)
 		user.Rename("jean paul")
 
@@ -75,8 +75,8 @@ func TestGetMany(t *testing.T, userStore UserStore) {
 	t.Run("it should return all the Users", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		john := New(NewUserPayload{PreferredName: "john", Email: "john@travolta.com"})
-		jane := New(NewUserPayload{PreferredName: "jane", Email: "jane@roosevelt.com"})
+		john := New("john", "john@travolta.com")
+		jane := New("jane", "jane@roosevelt.com")
 		userStore.Save(ctx, john)
 		userStore.Save(ctx, jane)
 
@@ -103,7 +103,7 @@ func TestGetByEmail(t *testing.T, userStore UserStore) {
 	t.Run("it should return the User", func(t *testing.T) {
 		t.Cleanup(userStore.Clear)
 
-		userStore.Save(ctx, New(NewUserPayload{PreferredName: "john", Email: "john@doe.com"}))
+		userStore.Save(ctx, New("john", "john@doe.com"))
 
 		user, err := userStore.GetByEmail(ctx, "john@doe.com")
 

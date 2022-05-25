@@ -12,16 +12,11 @@ type User struct {
 	email         string
 }
 
-type NewUserPayload struct {
-	PreferredName string
-	Email         string
-}
-
-func New(payload NewUserPayload) User {
+func New(preferredName string, email string) User {
 	return User{
 		id:            UserID{common.CreateID()},
-		preferredName: payload.PreferredName,
-		email:         payload.Email,
+		preferredName: preferredName,
+		email:         email,
 	}
 }
 

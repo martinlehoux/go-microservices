@@ -145,7 +145,7 @@ func TestHttpJoin(t *testing.T) {
 	})
 
 	t.Run("it should send a 201 and make the user join", func(t *testing.T) {
-		userToJoin := user.New(user.NewUserPayload{Email: "john@doe.com", PreferredName: "John Doe"})
+		userToJoin := user.New("John Doe", "john@doe.com")
 		groupToJoin := group.New("Group 1", "")
 		userStore.Save(ctx, userToJoin)
 		groupStore.Save(ctx, groupToJoin)
