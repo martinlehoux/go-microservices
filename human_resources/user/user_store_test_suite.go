@@ -84,7 +84,10 @@ func TestGetMany(t *testing.T, userStore UserStore) {
 
 		assert.NoError(err)
 		assert.Equal(2, len(users))
-		assert.ElementsMatch([]User{john, jane}, users)
+		assert.ElementsMatch([]UserDto{
+			{ID: john.id.String(), PreferredName: john.preferredName, Email: john.email},
+			{ID: jane.id.String(), PreferredName: jane.preferredName, Email: jane.email},
+		}, users)
 	})
 
 	t.Run("it should return an empty slice if there are no users", func(t *testing.T) {
@@ -93,7 +96,7 @@ func TestGetMany(t *testing.T, userStore UserStore) {
 		users, err := userStore.GetMany(ctx)
 
 		assert.NoError(err, "the get should succeed")
-		assert.Equal(make([]User, 0), users, "there should be no users")
+		assert.Equal(make([]UserDto, 0), users, "there should be no users")
 	})
 }
 

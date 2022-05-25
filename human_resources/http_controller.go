@@ -63,7 +63,7 @@ func (controller *HumanResourcesHttpController) Register(w http.ResponseWriter, 
 }
 
 func (controller *HumanResourcesHttpController) GetUsers(w http.ResponseWriter, req *http.Request) {
-	users, err := controller.humanResourcesService.GetUsers(req.Context())
+	users, err := controller.humanResourcesService.userStore.GetMany(req.Context())
 	if err != nil {
 		common.WriteError(w, http.StatusBadRequest, err)
 	}

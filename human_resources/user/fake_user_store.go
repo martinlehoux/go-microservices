@@ -27,10 +27,14 @@ func (store *FakeUserStore) Save(ctx context.Context, user User) error {
 	return nil
 }
 
-func (store *FakeUserStore) GetMany(ctx context.Context) ([]User, error) {
-	users := make([]User, 0)
+func (store *FakeUserStore) GetMany(ctx context.Context) ([]UserDto, error) {
+	users := make([]UserDto, 0)
 	for _, user := range store.users {
-		users = append(users, user)
+		users = append(users, UserDto{
+			ID:            user.id.String(),
+			PreferredName: user.preferredName,
+			Email:         user.email,
+		})
 	}
 	return users, nil
 }
