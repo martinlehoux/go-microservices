@@ -55,21 +55,6 @@ func (service *HumanResourcesService) Register(ctx context.Context, email string
 	return nil
 }
 
-// Deprecated: use read model
-func (service *HumanResourcesService) GetUsers(ctx context.Context) ([]user.UserDto, error) {
-	var err error
-
-	users, err := service.userStore.GetMany(ctx)
-
-	usersDto := make([]user.UserDto, 0)
-	for _, u := range users {
-		userDto := user.DtoFrom(u)
-		usersDto = append(usersDto, userDto)
-	}
-
-	return usersDto, err
-}
-
 func (service *HumanResourcesService) UserJoinGroup(ctx context.Context, userId user.UserID, groupId group.GroupID) error {
 	var err error
 	service.logger.With(ctx, "userId", userId.String()).With(ctx, "groupId", groupId.String())

@@ -34,8 +34,8 @@ func (store *SqlUserStore) Get(ctx context.Context, userId UserID) (User, error)
 	return user, convertPgxError(err)
 }
 
-func (store *SqlUserStore) GetMany(ctx context.Context) ([]User, error) {
-	users := make([]User, 0)
+func (store *SqlUserStore) GetMany(ctx context.Context) ([]UserDto, error) {
+	users := make([]UserDto, 0)
 	rows, err := store.conn.Query(ctx, "SELECT id, preferred_name, email FROM users")
 	if err != nil {
 		return users, err
@@ -47,7 +47,11 @@ func (store *SqlUserStore) GetMany(ctx context.Context) ([]User, error) {
 		if err != nil {
 			return users, err
 		}
-		users = append(users, user)
+		users = append(users, UserDto{
+			ID:            user.id.String(),
+			PreferredName: user.preferredName,
+			Email:         user.email,
+		})
 	}
 	return users, nil
 }

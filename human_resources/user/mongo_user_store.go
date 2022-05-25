@@ -63,7 +63,7 @@ func (store *MongoUserStore) GetByEmail(ctx context.Context, email string) (User
 	return parseMongoUserDocument(document)
 }
 
-func (store *MongoUserStore) GetMany(ctx context.Context) ([]User, error) {
+func (store *MongoUserStore) GetMany(ctx context.Context) ([]UserDto, error) {
 	var documents []UserDocument
 	cursor, err := store.collection.Find(ctx, bson.D{})
 	if err != nil {
@@ -76,13 +76,17 @@ func (store *MongoUserStore) GetMany(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 
-	users := make([]User, len(documents))
+	users := make([]UserDto, len(documents))
 	for i, document := range documents {
 		user, err := parseMongoUserDocument(document)
 		if err != nil {
 			return nil, err
 		}
-		users[i] = user
+		users[i] = UserDto{
+			ID:            user.id.String(),
+			PreferredName: user.preferredName,
+			Email:         user.email,
+		}
 	}
 
 	return users, nil
