@@ -14,7 +14,7 @@ var ctx = context.Background()
 
 func TestSave(t *testing.T) {
 	assert := assert.New(t)
-	store := NewSqlAccountStore()
+	store := NewSqlAccountStore("test_authentication")
 
 	t.Run("it should save the Account", func(t *testing.T) {
 		t.Cleanup(store.Clear)
@@ -42,7 +42,7 @@ func TestSave(t *testing.T) {
 
 func TestGetByIdentifier(t *testing.T) {
 	assert := assert.New(t)
-	store := NewSqlAccountStore()
+	store := NewSqlAccountStore("test_authentication")
 
 	t.Run("it should not get an Account with antoher identifier", func(t *testing.T) {
 		t.Cleanup(store.Clear)

@@ -7,6 +7,6 @@ import (
 )
 
 func TestMongoGroupStore(t *testing.T) {
-	store := NewMongoGroupStore()
+	store := NewMongoGroupStore("test_human_resources")
 	GroupStoreTestSuite(t, &store)
 }

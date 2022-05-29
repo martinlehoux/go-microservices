@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"go-microservices/common"
 
 	"github.com/jackc/pgx/v4"
@@ -12,8 +13,8 @@ type SqlUserStore struct {
 	conn *pgxpool.Pool
 }
 
-func NewSqlUserStore() SqlUserStore {
-	conn, err := pgxpool.Connect(context.Background(), "postgres://user:password@localhost:5432/human_resources")
+func NewSqlUserStore(database string) SqlUserStore {
+	conn, err := pgxpool.Connect(context.Background(), fmt.Sprintf("postgres://user:password@localhost:5432/%s", database))
 	common.PanicOnError(err)
 	return SqlUserStore{
 		conn: conn,

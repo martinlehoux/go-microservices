@@ -7,6 +7,6 @@ import (
 )
 
 func TestMongoUserStore(t *testing.T) {
-	store := NewMongoUserStore()
+	store := NewMongoUserStore("test_human_resources")
 	UserStoreTestSuite(t, &store)
 }

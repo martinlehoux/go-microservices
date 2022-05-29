@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"fmt"
 	"go-microservices/common"
 	"go-microservices/human_resources/user"
 
@@ -13,8 +14,8 @@ type SqlGroupStore struct {
 	conn *pgxpool.Pool
 }
 
-func NewSqlGroupStore() SqlGroupStore {
-	conn, err := pgxpool.Connect(context.Background(), "postgres://user:password@localhost:5432/human_resources")
+func NewSqlGroupStore(database string) SqlGroupStore {
+	conn, err := pgxpool.Connect(context.Background(), fmt.Sprintf("postgres://user:password@localhost:5432/%s", database))
 	common.PanicOnError(err)
 	return SqlGroupStore{
 		conn: conn,
