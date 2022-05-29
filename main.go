@@ -8,13 +8,16 @@ import (
 	"go-microservices/human_resources"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func main() {
-	privateKey := common.LoadPrivateKey("id_rsa")
 	logger := common.NewLogrusLogger()
+	start := time.Now()
+	logger.Info(context.Background(), "booting up services")
+	privateKey := common.LoadPrivateKey("id_rsa")
 	authenticationController := authentication.Bootstrap(&logger, privateKey)
 	humanResourcesController := human_resources.Bootstrap(&logger, privateKey.PublicKey)
 
@@ -28,6 +31,7 @@ func main() {
 
 	router.Mount("/hr", humanResourcesController)
 	router.Mount("/auth", authenticationController)
+	logger.Info(context.Background(), "services boot up in %d ms", time.Since(start).Milliseconds())
 
 	const port = 3000
 	logger.Info(context.Background(), "listening on http://localhost:%d", port)
