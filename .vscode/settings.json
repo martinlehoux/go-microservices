@@ -1,3 +1,6 @@
 {
-  "go.buildTags": "spec intg e2e"
+  "go.buildTags": "spec intg e2e",
+  "gopls": {
+  "build.buildFlags": ["-tags=intg spec"]
+  }
 }
