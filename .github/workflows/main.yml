@@ -32,11 +32,6 @@ jobs:
           docker-compose up -d
           sleep 2s
 
-      - name: Setup databases & Run migrations
-        run: |
-          just database authentication
-          just database human_resources
-
       - name: Lint
         run: just lint
 

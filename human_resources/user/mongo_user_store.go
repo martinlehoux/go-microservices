@@ -19,7 +19,7 @@ type MongoUserStore struct {
 	collection *mongo.Collection
 }
 
-func NewMongoUserStore() MongoUserStore {
+func NewMongoUserStore(database string) MongoUserStore {
 	ctx := context.Background()
 	credentials := options.Credential{
 		Username: "user",
@@ -27,7 +27,7 @@ func NewMongoUserStore() MongoUserStore {
 	}
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"), options.Client().SetAuth(credentials))
 	common.PanicOnError(err)
-	collection := client.Database("human_resources").Collection("users")
+	collection := client.Database(database).Collection("users")
 	return MongoUserStore{
 		collection: collection,
 	}

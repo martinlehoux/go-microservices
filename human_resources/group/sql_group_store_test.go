@@ -7,6 +7,6 @@ import (
 )
 
 func TestSqlGroupStore(t *testing.T) {
-	store := NewSqlGroupStore()
+	store := NewSqlGroupStore("test_human_resources")
 	GroupStoreTestSuite(t, &store)
 }

@@ -7,6 +7,6 @@ import (
 )
 
 func TestSqlUserStore(t *testing.T) {
-	store := NewSqlUserStore()
+	store := NewSqlUserStore("test_human_resources")
 	UserStoreTestSuite(t, &store)
 }
